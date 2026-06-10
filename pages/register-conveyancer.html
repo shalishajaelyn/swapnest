@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conveyancer Registration — Nest X</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="../index.html" class="logo">Nest<span>X</span></a>
+    <div class="nav-links">
+      <a href="../browse.html">Browse homes</a>
+      <a href="about.html">About</a>
+      <a href="conveyancers.html">Conveyancers</a>
+      <a href="pricing.html">Pricing</a>
+      <span id="userEmail" class="user-email"></span>
+      <button id="authBtn" class="btn btn-outline" onclick="handleAuth()">Sign in</button>
+    </div>
+    <button class="hamburger" onclick="toggleMenu()">&#9776;</button>
+  </nav>
+
+  <div class="disclaimer-banner">
+    <div class="container">
+      ⚖️ Nest X is a private listing platform only. We are <strong>not a licensed real estate agent</strong> and do not provide property advice. Conveyancer listings are for directory purposes only.
+    </div>
+  </div>
+
+  <div class="page-header">
+    <div class="container">
+      <h1>Join the Nest X conveyancer directory</h1>
+      <p>Connect with NZ homeowners looking to swap or sell privately</p>
+    </div>
+  </div>
+
+  <!-- BENEFITS -->
+  <div class="profit-banner">
+    <div class="container">
+      <div class="profit-banner-inner">
+        <div class="profit-stat">
+          <span class="profit-icon">🆓</span>
+          <div>
+            <strong>First month free</strong>
+            <span>No credit card required to start</span>
+          </div>
+        </div>
+        <div class="profit-stat">
+          <span class="profit-icon">💵</span>
+          <div>
+            <strong>$40/month thereafter</strong>
+            <span>Cancel anytime</span>
+          </div>
+        </div>
+        <div class="profit-stat">
+          <span class="profit-icon">🏡</span>
+          <div>
+            <strong>Swap-ready clients</strong>
+            <span>Simultaneous settlements</span>
+          </div>
+        </div>
+        <div class="profit-stat">
+          <span class="profit-icon">✅</span>
+          <div>
+            <strong>Verified directory</strong>
+            <span>Manually approved listings</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container form-layout" style="max-width:680px">
+
+    <div class="conv-reg-notice">
+      <h3>Important — please read</h3>
+      <p>Nest X provides a directory of conveyancers as a convenience to our users only. We do not endorse or recommend any conveyancer. Users contact and engage conveyancers directly and independently. Nest X receives no referral fees and takes no responsibility for services provided. All listings are manually reviewed before going live.</p>
+    </div>
+
+    <form id="convRegForm" class="listing-form">
+
+      <div class="form-card">
+        <h2>Your details</h2>
+
+        <div class="form-grid-2">
+          <div class="form-row">
+            <label>First name <span class="req">*</span></label>
+            <input type="text" id="convFirstName" placeholder="First name" required>
+          </div>
+          <div class="form-row">
+            <label>Last name <span class="req">*</span></label>
+            <input type="text" id="convLastName" placeholder="Last name" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label>Email address <span class="req">*</span></label>
+          <input type="email" id="convEmail" placeholder="you@firmname.co.nz" required>
+        </div>
+
+        <div class="form-row">
+          <label>Password <span class="req">*</span></label>
+          <input type="password" id="convPassword" placeholder="At least 8 characters" required>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <h2>Practice details</h2>
+
+        <div class="form-row">
+          <label>Firm / practice name <span class="req">*</span></label>
+          <input type="text" id="convFirm" placeholder="e.g. Smith & Associates" required>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-row">
+            <label>Region <span class="req">*</span></label>
+            <select id="convRegion" required>
+              <option value="">Select region…</option>
+              <option>Auckland</option>
+              <option>Wellington</option>
+              <option>Canterbury</option>
+              <option>Waikato</option>
+              <option>Bay of Plenty</option>
+              <option>Otago</option>
+              <option>Manawatu-Whanganui</option>
+              <option>Hawke's Bay</option>
+              <option>Northland</option>
+              <option>Nelson/Marlborough</option>
+              <option>Southland</option>
+              <option>NZ Wide</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>City / suburb <span class="req">*</span></label>
+            <input type="text" id="convCity" placeholder="e.g. Wellington CBD" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label>Office address</label>
+          <input type="text" id="convAddress" placeholder="Street address">
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-row">
+            <label>Phone number <span class="req">*</span></label>
+            <input type="tel" id="convPhone" placeholder="04 xxx xxxx" required>
+          </div>
+          <div class="form-row">
+            <label>Website</label>
+            <input type="url" id="convWebsite" placeholder="https://yourfirm.co.nz">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label>Specialties</label>
+          <div class="specialty-checkboxes">
+            <label class="specialty-item">
+              <input type="checkbox" value="simultaneous_settlements"> Simultaneous settlements
+            </label>
+            <label class="specialty-item">
+              <input type="checkbox" value="residential"> Residential conveyancing
+            </label>
+            <label class="specialty-item">
+              <input type="checkbox" value="rural"> Rural / lifestyle property
+            </label>
+            <label class="specialty-item">
+              <input type="checkbox" value="commercial"> Commercial property
+            </label>
+            <label class="specialty-item">
+              <input type="checkbox" value="private_sales"> Private sales
+            </label>
+            <label class="specialty-item">
+              <input type="checkbox" value="first_home"> First home buyers
+            </label>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label>About your practice</label>
+          <textarea id="convAbout" rows="4" placeholder="Briefly describe your practice, experience with swap sales, and what makes you a good fit for Nest X clients…"></textarea>
+        </div>
+
+        <div class="form-row">
+          <label>Profile photo (optional)</label>
+          <div class="id-upload-zone" onclick="document.getElementById('convPhoto').click()">
+            <input type="file" id="convPhoto" accept="image/*" style="display:none" onchange="handleIdPreview(event,'photoPreview','photoPrompt')">
+            <div id="photoPrompt" style="text-align:center">
+              <div style="font-size:28px;margin-bottom:6px">📸</div>
+              <p style="font-size:14px;font-weight:500">Upload a professional photo</p>
+              <span style="font-size:12px;color:var(--text-muted)">JPG or PNG — max 5MB</span>
+            </div>
+            <div id="photoPreview" style="display:none;text-align:center;padding:0.5rem">
+              <div style="font-size:24px">✅</div>
+              <p style="font-size:13px;font-weight:500;color:var(--green)" id="photoFileName"></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label>NZ Law Society membership number <span class="req">*</span></label>
+          <input type="text" id="convLawSociety" placeholder="Your NZLS membership number" required>
+          <span class="field-hint">We verify all practitioners against the NZ Law Society register before approving listings.</span>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <h2>Subscription</h2>
+
+        <div class="subscription-summary">
+          <div class="sub-item">
+            <span class="sub-icon">🆓</span>
+            <div>
+              <strong>Month 1 — Free</strong>
+              <p>Your listing goes live (after approval) at no charge for the first month.</p>
+            </div>
+          </div>
+          <div class="sub-item">
+            <span class="sub-icon">💵</span>
+            <div>
+              <strong>Month 2 onwards — $40/month NZD</strong>
+              <p>Automatically billed via Stripe. Cancel anytime — your listing is removed when subscription ends.</p>
+            </div>
+          </div>
+        </div>
+
+        <p style="font-size:13px;color:var(--text-muted);margin-top:1rem">To start your free month, we'll collect your card details now but <strong>will not charge you until month 2</strong>. You'll receive a reminder email before your first charge.</p>
+
+        <div class="form-row" style="margin-top:1.25rem">
+          <label>Card details <span class="req">*</span></label>
+          <div id="convCardElement" class="stripe-card-element"></div>
+          <div id="convCardError" class="form-error" style="display:none;margin-top:8px"></div>
+        </div>
+
+        <div class="form-row">
+          <label class="checkbox-label">
+            <input type="checkbox" id="convAgreeTerms" required>
+            I agree to the <a href="terms.html" target="_blank">terms of use</a> and <a href="privacy.html" target="_blank">privacy policy</a>. I confirm I am a licensed NZ conveyancer and the information provided is accurate.
+          </label>
+        </div>
+
+        <div class="form-row">
+          <label class="checkbox-label">
+            <input type="checkbox" id="convAgreeDirectory" required>
+            I understand that Nest X provides a directory listing only. Nest X does not endorse my services, receive referral fees, or take responsibility for client engagements.
+          </label>
+        </div>
+      </div>
+
+      <div id="convRegError" class="form-error" style="display:none;margin-top:1rem"></div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-primary btn-lg" id="convSubmitBtn" onclick="submitConveyancerReg()">
+          Start free month →
+        </button>
+        <p class="form-note">No charge today. $40/month begins after your free first month. Cancel anytime.</p>
+      </div>
+
+    </form>
+
+    <!-- SUCCESS STATE -->
+    <div id="convSuccess" style="display:none">
+      <div class="form-card" style="text-align:center;padding:3rem 2rem">
+        <div style="font-size:56px;margin-bottom:1rem">⚖️</div>
+        <h2 style="margin-bottom:0.75rem">Application received!</h2>
+        <p style="color:var(--text-mid);margin-bottom:1.5rem;font-size:15px">We're reviewing your details and verifying your NZ Law Society membership. Your listing will go live within 1–2 business days once approved.</p>
+        <div class="verification-status-box">
+          <div class="vs-item">
+            <span class="vs-icon">⏳</span>
+            <div>
+              <strong>Details under review</strong>
+              <span>We're verifying your NZLS membership</span>
+            </div>
+          </div>
+          <div class="vs-item">
+            <span class="vs-icon">🆓</span>
+            <div>
+              <strong>Free month starts on approval</strong>
+              <span>No charge until month 2</span>
+            </div>
+          </div>
+          <div class="vs-item">
+            <span class="vs-icon">📧</span>
+            <div>
+              <strong>Email confirmation</strong>
+              <span>We'll email you when you're live in the directory</span>
+            </div>
+          </div>
+        </div>
+        <a href="conveyancers.html" class="btn btn-outline btn-lg" style="margin-top:1.5rem">View the directory →</a>
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <span class="logo">Nest<span>X</span></span>
+        <p>New Zealand's verified private home swap marketplace.</p>
+      </div>
+      <div class="footer-links">
+        <a href="../browse.html">Browse</a>
+        <a href="about.html">About</a>
+        <a href="conveyancers.html">Conveyancers</a>
+        <a href="pricing.html">Pricing</a>
+        <a href="terms.html">Terms of use</a>
+        <a href="privacy.html">Privacy policy</a>
+        <a href="mailto:hello@nestx.co.nz">Contact</a>
+      </div>
+      <p class="footer-disclaimer">⚖️ Nest X is a private listing platform only. We are not a licensed real estate agent and do not provide property advice. Conveyancer listings are for directory purposes only — Nest X does not endorse or take responsibility for any listed conveyancer.</p>
+    </div>
+  </footer>
+
+  <script src="../js/supabase.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/register-conveyancer.js"></script>
+</body>
+</html>

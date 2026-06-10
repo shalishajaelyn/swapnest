@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pricing — Nest X</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="../index.html" class="logo">Nest<span>X</span></a>
+    <div class="nav-links">
+      <a href="../browse.html">Browse homes</a>
+      <a href="about.html">About</a>
+      <a href="conveyancers.html">Conveyancers</a>
+      <a href="pricing.html" class="active">Pricing</a>
+      <span id="userEmail" class="user-email"></span>
+      <button id="authBtn" class="btn btn-outline" onclick="handleAuth()">Sign in</button>
+    </div>
+    <button class="hamburger" onclick="toggleMenu()">&#9776;</button>
+  </nav>
+
+  <div class="disclaimer-banner">
+    <div class="container">
+      ⚖️ Nest X is a private listing platform only. We are <strong>not a licensed real estate agent</strong> and do not provide property advice.
+    </div>
+  </div>
+
+  <div class="page-header">
+    <div class="container">
+      <h1>Simple, transparent pricing</h1>
+      <p>No commission. No hidden fees. Keep 100% of your profit.</p>
+    </div>
+  </div>
+
+  <div class="container pricing-layout">
+
+    <!-- PROFIT HERO -->
+    <div class="pricing-hero">
+      <div class="pricing-hero-inner">
+        <div style="font-size:48px;margin-bottom:1rem">💰</div>
+        <h2>The average NZ real estate agent charges 2–3% commission</h2>
+        <p>On a $900,000 home that's <strong>$18,000–$27,000</strong> straight out of your pocket.</p>
+        <p style="margin-top:0.5rem">With Nest X, you pay a small registration fee and <strong>keep every dollar of your profit.</strong></p>
+      </div>
+    </div>
+
+    <!-- PRICING CARDS -->
+    <div class="pricing-cards">
+
+      <!-- LISTER -->
+      <div class="pricing-card pricing-card-featured">
+        <div class="pricing-card-badge">Most popular</div>
+        <div class="pricing-card-header">
+          <h3>Lister</h3>
+          <p>List your home and find your swap</p>
+        </div>
+        <div class="pricing-card-price">
+          <div class="price-main">0.2% <span>of RV</span></div>
+          <div class="price-sub">Registration fee (minimum $500)</div>
+        </div>
+        <div class="pricing-card-includes">
+          <div class="price-include">✅ List your property</div>
+          <div class="price-include">✅ Browse all listings</div>
+          <div class="price-include">✅ Send swap offers</div>
+          <div class="price-include">✅ First 3 months included</div>
+          <div class="price-include">✅ ID verified profile</div>
+          <div class="price-include">✅ Photo uploads</div>
+          <div class="price-include muted">📅 $40/month from month 4</div>
+          <div class="price-include muted">🔄 Swap or Sell upgrade $199</div>
+          <div class="price-include highlight">💰 Zero commission — ever</div>
+        </div>
+        <a href="register-lister.html" class="btn btn-primary btn-full btn-lg">List your home →</a>
+        <p style="font-size:12px;color:var(--text-muted);text-align:center;margin-top:0.75rem">Access ends when listing is removed or property sold</p>
+      </div>
+
+      <!-- CONVEYANCER -->
+      <div class="pricing-card">
+        <div class="pricing-card-header">
+          <h3>Conveyancer</h3>
+          <p>Get listed in our directory</p>
+        </div>
+        <div class="pricing-card-price">
+          <div class="price-main">Free <span>first month</span></div>
+          <div class="price-sub">Then $40/month NZD</div>
+        </div>
+        <div class="pricing-card-includes">
+          <div class="price-include">✅ Directory listing</div>
+          <div class="price-include">✅ Profile with photo</div>
+          <div class="price-include">✅ Region & specialties listed</div>
+          <div class="price-include">✅ Direct contact from users</div>
+          <div class="price-include">✅ Cancel anytime</div>
+          <div class="price-include muted">⏳ Manual approval required</div>
+          <div class="price-include muted">🏛️ NZLS verification required</div>
+        </div>
+        <a href="register-conveyancer.html" class="btn btn-primary btn-full btn-lg">Start free month →</a>
+        <p style="font-size:12px;color:var(--text-muted);text-align:center;margin-top:0.75rem">No charge until month 2. Cancel anytime.</p>
+      </div>
+
+    </div>
+
+    <!-- SWAP OR SELL UPGRADE -->
+    <div class="upgrade-banner">
+      <div class="upgrade-banner-inner">
+        <div>
+          <h3>🔄 Swap or Sell upgrade</h3>
+          <p>Start with swap-only, then upgrade anytime to accept straight purchase offers too. Maximise your chances of a sale.</p>
+        </div>
+        <div class="upgrade-price">
+          <span class="upgrade-amount">$199</span>
+          <span class="upgrade-sub">one-off upgrade fee</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- FEE CALCULATOR -->
+    <div class="calc-section">
+      <h2>Calculate your registration fee</h2>
+      <p style="color:var(--text-mid);margin-bottom:1.5rem">Enter your property's Rateable Value to see your exact fee.</p>
+
+      <div class="fee-calc-interactive">
+        <div class="calc-input-row">
+          <label>Your property RV ($)</label>
+          <input type="number" id="calcRVInput" placeholder="e.g. 850000" oninput="updateCalc()" min="0">
+        </div>
+        <div class="fee-calculator" id="calcResult" style="display:none">
+          <div class="fee-calc-header"><span>📊 Your fee breakdown</span></div>
+          <div class="fee-calc-body">
+            <div class="fee-line">
+              <span>Property RV</span>
+              <span id="calcDisplayRV">—</span>
+            </div>
+            <div class="fee-line">
+              <span>0.2% of RV</span>
+              <span id="calcDisplay02">—</span>
+            </div>
+            <div class="fee-line fee-minimum" id="calcMinNote" style="display:none">
+              <span>Minimum fee applies</span>
+              <span>$500.00</span>
+            </div>
+            <div class="fee-line fee-total">
+              <span>Registration fee (due today)</span>
+              <span id="calcDisplayTotal">—</span>
+            </div>
+            <div class="fee-line fee-included">
+              <span>✅ Months 1–3 included</span>
+              <span>No further charge</span>
+            </div>
+            <div class="fee-line fee-included">
+              <span>📅 From month 4</span>
+              <span>$40.00/month</span>
+            </div>
+          </div>
+          <div class="fee-profit-note" id="calcSavingsNote"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMPARISON TABLE -->
+    <div class="comparison-section">
+      <h2>Nest X vs traditional options</h2>
+      <p style="color:var(--text-mid);margin-bottom:1.5rem">See how Nest X compares over 6 months on a $900,000 home.</p>
+
+      <div class="comparison-table-wrap">
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th class="col-nestx">Nest X</th>
+              <th>TradeMe Basic</th>
+              <th>Real Estate Agent</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Initial listing cost</td>
+              <td class="col-nestx">0.2% of RV</td>
+              <td>$350</td>
+              <td>$0 upfront</td>
+            </tr>
+            <tr>
+              <td>Listing duration</td>
+              <td class="col-nestx">Permanent</td>
+              <td>56 days then relist</td>
+              <td>Until sold</td>
+            </tr>
+            <tr>
+              <td>Cost at 6 months</td>
+              <td class="col-nestx highlight-cell">~$1,920*</td>
+              <td>~$1,050 (3 relists)</td>
+              <td>$0</td>
+            </tr>
+            <tr>
+              <td>Commission on sale</td>
+              <td class="col-nestx highlight-cell">$0 — zero commission</td>
+              <td>Agent fees if used</td>
+              <td>$18,000–$27,000</td>
+            </tr>
+            <tr>
+              <td>Total cost on $900k sale</td>
+              <td class="col-nestx highlight-cell">~$1,920</td>
+              <td>$1,050 + agent fees</td>
+              <td>$18,000–$27,000+</td>
+            </tr>
+            <tr>
+              <td>Swap matching</td>
+              <td class="col-nestx">✅ Yes</td>
+              <td>❌ No</td>
+              <td>Rarely</td>
+            </tr>
+            <tr>
+              <td>ID verified community</td>
+              <td class="col-nestx">✅ Yes</td>
+              <td>❌ No</td>
+              <td>✅ Yes</td>
+            </tr>
+            <tr>
+              <td>Swap or Sell option</td>
+              <td class="col-nestx">✅ $199 upgrade</td>
+              <td>Buy/sell only</td>
+              <td>Buy/sell only</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);margin-top:0.75rem">*Based on $900k RV property: $1,800 registration + 3 months at $40/month = $1,920 total over 6 months.</p>
+    </div>
+
+    <!-- FAQ -->
+    <div class="pricing-faq">
+      <h2>Pricing questions</h2>
+      <div class="faq-list">
+        <div class="faq-item-full">
+          <h4>Why is the fee based on RV and not asking price?</h4>
+          <p>RV is independently set by your local council and is publicly verifiable — which means it's harder to misrepresent. We verify all RVs before listings go live.</p>
+        </div>
+        <div class="faq-item-full">
+          <h4>What happens if my RV is much lower than my asking price?</h4>
+          <p>That's completely normal in NZ — many properties sell well above RV. Your fee is based on RV only, not your asking price or final sale price.</p>
+        </div>
+        <div class="faq-item-full">
+          <h4>Can I get a refund if I change my mind?</h4>
+          <p>Registration fees are non-refundable. If you remove your listing, your access ends immediately but no further monthly fees are charged.</p>
+        </div>
+        <div class="faq-item-full">
+          <h4>Is there any commission when my swap or sale completes?</h4>
+          <p>No — absolutely none. Zero. Every dollar of your profit is yours to keep. This is the core promise of Nest X.</p>
+        </div>
+        <div class="faq-item-full">
+          <h4>What does the Swap or Sell upgrade include?</h4>
+          <p>For $199 your listing is upgraded to accept both swap offers and straight purchase offers. This maximises your chances of a result and is available anytime after registration.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <span class="logo">Nest<span>X</span></span>
+        <p>New Zealand's verified private home swap marketplace.</p>
+      </div>
+      <div class="footer-links">
+        <a href="../browse.html">Browse</a>
+        <a href="register-lister.html">List a home</a>
+        <a href="about.html">About</a>
+        <a href="conveyancers.html">Conveyancers</a>
+        <a href="terms.html">Terms of use</a>
+        <a href="privacy.html">Privacy policy</a>
+        <a href="mailto:hello@nestx.co.nz">Contact</a>
+      </div>
+      <p class="footer-disclaimer">⚖️ Nest X is a private listing platform only. We are not a licensed real estate agent and do not provide property advice. All transactions must be completed through a licensed NZ conveyancer.</p>
+    </div>
+  </footer>
+
+  <script src="../js/supabase.js"></script>
+  <script src="../js/auth.js"></script>
+  <script>
+    function updateCalc() {
+      const rv = parseInt(document.getElementById('calcRVInput').value) || 0;
+      const result = document.getElementById('calcResult');
+      if (!rv) { result.style.display = 'none'; return; }
+
+      const pct = rv * 0.002;
+      const fee = Math.max(pct, 500);
+      const minNote = document.getElementById('calcMinNote');
+
+      document.getElementById('calcDisplayRV').textContent = '$' + rv.toLocaleString('en-NZ');
+      document.getElementById('calcDisplay02').textContent = '$' + pct.toLocaleString('en-NZ', {minimumFractionDigits:2, maximumFractionDigits:2});
+      document.getElementById('calcDisplayTotal').textContent = '$' + fee.toLocaleString('en-NZ', {minimumFractionDigits:2, maximumFractionDigits:2});
+      minNote.style.display = pct < 500 ? 'flex' : 'none';
+
+      // Savings vs agent
+      const agentLow = rv * 0.02;
+      const savings = agentLow - fee;
+      const savingsEl = document.getElementById('calcSavingsNote');
+      if (savings > 0) {
+        savingsEl.innerHTML = `💰 <strong>You save at least $${savings.toLocaleString('en-NZ', {minimumFractionDigits:0, maximumFractionDigits:0})}</strong> compared to a 2% agent commission on your asking price.`;
+      }
+
+      result.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

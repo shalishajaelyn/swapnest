@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>List Your Home — Nest X</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="../index.html" class="logo">Nest<span>X</span></a>
+    <div class="nav-links">
+      <a href="../browse.html">Browse homes</a>
+      <a href="about.html">About</a>
+      <a href="conveyancers.html">Conveyancers</a>
+      <a href="pricing.html">Pricing</a>
+      <span id="userEmail" class="user-email"></span>
+      <button id="authBtn" class="btn btn-outline" onclick="handleAuth()">Sign in</button>
+    </div>
+    <button class="hamburger" onclick="toggleMenu()">&#9776;</button>
+  </nav>
+
+  <div class="disclaimer-banner">
+    <div class="container">
+      ⚖️ Nest X is a private listing platform only. We are <strong>not a licensed real estate agent</strong> and do not provide property advice.
+    </div>
+  </div>
+
+  <div class="page-header">
+    <div class="container">
+      <h1>List your home on Nest X</h1>
+      <p>One registration fee. No commission. Keep 100% of your profit.</p>
+    </div>
+  </div>
+
+  <!-- PROFIT HIGHLIGHT -->
+  <div class="profit-banner">
+    <div class="container">
+      <div class="profit-banner-inner">
+        <div class="profit-stat">
+          <span class="profit-icon">💰</span>
+          <div>
+            <strong>Zero commission</strong>
+            <span>Keep every dollar of your sale</span>
+          </div>
+        </div>
+        <div class="profit-stat">
+          <span class="profit-icon">🔄</span>
+          <div>
+            <strong>Swap or sell</strong>
+            <span>Upgrade anytime for $199</span>
+          </div>
+        </div>
+        <div class="profit-stat">
+          <span class="profit-icon">📅</span>
+          <div>
+            <strong>3 months included</strong>
+            <span>Then just $40/month</span>
+          </div>
+        </div>
+        <div class="profit-stat">
+          <span class="profit-icon">✅</span>
+          <div>
+            <strong>No relisting fees</strong>
+            <span>Unlike TradeMe's 56-day limit</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container form-layout" style="max-width:780px">
+
+    <!-- PROGRESS STEPS -->
+    <div class="reg-steps">
+      <div class="reg-step active" id="step-indicator-1">
+        <div class="reg-step-num">1</div>
+        <span>Your details</span>
+      </div>
+      <div class="reg-step-line"></div>
+      <div class="reg-step" id="step-indicator-2">
+        <div class="reg-step-num">2</div>
+        <span>Your property</span>
+      </div>
+      <div class="reg-step-line"></div>
+      <div class="reg-step" id="step-indicator-3">
+        <div class="reg-step-num">3</div>
+        <span>Payment</span>
+      </div>
+      <div class="reg-step-line"></div>
+      <div class="reg-step" id="step-indicator-4">
+        <div class="reg-step-num">4</div>
+        <span>Verification</span>
+      </div>
+    </div>
+
+    <!-- STEP 1: ACCOUNT DETAILS -->
+    <div id="step1" class="reg-step-content">
+      <div class="form-card">
+        <h2>Create your account</h2>
+        <p class="card-subtitle">Your contact details are never shown publicly.</p>
+
+        <div class="form-grid-2">
+          <div class="form-row">
+            <label>First name <span class="req">*</span></label>
+            <input type="text" id="firstName" placeholder="First name">
+          </div>
+          <div class="form-row">
+            <label>Last name <span class="req">*</span></label>
+            <input type="text" id="lastName" placeholder="Last name (not shown publicly)">
+          </div>
+        </div>
+        <div class="form-row">
+          <label>Email address <span class="req">*</span></label>
+          <input type="email" id="regEmail" placeholder="you@example.com">
+        </div>
+        <div class="form-row">
+          <label>Password <span class="req">*</span></label>
+          <input type="password" id="regPassword" placeholder="At least 8 characters">
+        </div>
+        <div class="form-row">
+          <label>Phone number</label>
+          <input type="tel" id="regPhone" placeholder="021 234 5678">
+        </div>
+
+        <div class="form-card" style="background:var(--surface);margin-top:1.5rem">
+          <h3 style="font-size:14px;font-weight:600;margin-bottom:1rem">Identity verification</h3>
+          <div class="verify-notice">
+            <div class="verify-notice-icon">🪪</div>
+            <div>
+              <strong>Government ID required</strong>
+              <p>All Nest X members must verify their identity. Upload your driver's licence or passport.</p>
+            </div>
+          </div>
+          <div class="form-row">
+            <label>ID Type</label>
+            <select id="idType">
+              <option value="drivers_licence">NZ Driver's Licence</option>
+              <option value="passport">Passport (any country)</option>
+              <option value="kiwiaccess">Kiwi Access Card</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>Upload ID photo <span class="req">*</span></label>
+            <div class="id-upload-zone" onclick="document.getElementById('idFile').click()">
+              <input type="file" id="idFile" accept="image/*,.pdf" style="display:none" onchange="handleIdPreview(event,'idPreview','idPrompt')">
+              <div id="idPrompt" style="text-align:center">
+                <div style="font-size:28px;margin-bottom:6px">📄</div>
+                <p style="font-size:14px;font-weight:500">Click to upload ID</p>
+                <span style="font-size:12px;color:var(--text-muted)">JPG, PNG or PDF — max 10MB</span>
+              </div>
+              <div id="idPreview" style="display:none;text-align:center;padding:0.5rem">
+                <div style="font-size:24px">✅</div>
+                <p style="font-size:13px;font-weight:500;color:var(--green)" id="idFileName"></p>
+              </div>
+            </div>
+          </div>
+          <div class="form-row">
+            <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer">
+              <input type="checkbox" id="policeCheck" style="margin-top:3px;accent-color:var(--green)" onchange="togglePoliceUpload()">
+              <div>
+                <strong style="font-size:14px">Optional: Police Vetting check</strong>
+                <p style="font-size:13px;color:var(--text-muted);margin-top:3px">Adds a verified badge to your profile. Get yours free at <a href="https://www.police.govt.nz/advice-services/personal-requests/vetting" target="_blank">police.govt.nz</a></p>
+              </div>
+            </label>
+          </div>
+          <div id="policeUploadSection" style="display:none">
+            <div class="form-row">
+              <div class="id-upload-zone" onclick="document.getElementById('policeFile').click()">
+                <input type="file" id="policeFile" accept="image/*,.pdf" style="display:none" onchange="handleIdPreview(event,'policePreview','policePrompt')">
+                <div id="policePrompt" style="text-align:center">
+                  <div style="font-size:28px;margin-bottom:6px">🚔</div>
+                  <p style="font-size:14px;font-weight:500">Upload Police Vetting result</p>
+                </div>
+                <div id="policePreview" style="display:none;text-align:center;padding:0.5rem">
+                  <div style="font-size:24px">✅</div>
+                  <p style="font-size:13px;font-weight:500;color:var(--green)" id="policeFileName"></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="step1Error" class="form-error" style="display:none;margin-top:1rem"></div>
+      <div class="form-actions">
+        <button class="btn btn-primary btn-lg" onclick="proceedToStep2()">Continue to property details →</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: PROPERTY DETAILS -->
+    <div id="step2" class="reg-step-content" style="display:none">
+      <div class="form-card">
+        <h2>Your property</h2>
+        <p class="card-subtitle">Tell us about the home you're listing.</p>
+
+        <div class="form-row">
+          <label>Full address <span class="req">*</span></label>
+          <input type="text" id="propAddress" placeholder="e.g. 34 Aro Street, Aro Valley, Wellington 6021">
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-row">
+            <label>Rateable Value / RV ($) <span class="req">*</span></label>
+            <input type="number" id="propRV" placeholder="e.g. 850000" oninput="calculateFee()" min="0">
+            <span class="field-hint">Found on your rates notice or at your local council website</span>
+          </div>
+          <div class="form-row">
+            <label>Your asking price ($) <span class="req">*</span></label>
+            <input type="number" id="propPrice" placeholder="e.g. 920000" min="0">
+          </div>
+        </div>
+
+        <!-- FEE CALCULATOR -->
+        <div class="fee-calculator" id="feeCalculator" style="display:none">
+          <div class="fee-calc-header">
+            <span>📊 Your registration fee</span>
+          </div>
+          <div class="fee-calc-body">
+            <div class="fee-line">
+              <span>Property RV</span>
+              <span id="calcRV">—</span>
+            </div>
+            <div class="fee-line">
+              <span>Registration fee (0.2% of RV)</span>
+              <span id="calcPercent">—</span>
+            </div>
+            <div class="fee-line fee-minimum" id="minimumNote" style="display:none">
+              <span>Minimum fee applies</span>
+              <span>$500.00</span>
+            </div>
+            <div class="fee-line fee-total">
+              <span>Total due today</span>
+              <span id="calcTotal">—</span>
+            </div>
+            <div class="fee-line fee-included">
+              <span>✅ Includes first 3 months</span>
+              <span>Then $40/month from month 4</span>
+            </div>
+          </div>
+          <div class="fee-profit-note">
+            💰 <strong>No commission ever.</strong> When you sell or swap, every dollar of profit is yours to keep.
+          </div>
+        </div>
+
+        <div class="form-grid-3">
+          <div class="form-row">
+            <label>Bedrooms <span class="req">*</span></label>
+            <input type="number" id="propBeds" placeholder="3" min="1" max="20">
+          </div>
+          <div class="form-row">
+            <label>Bathrooms <span class="req">*</span></label>
+            <input type="number" id="propBaths" placeholder="2" min="1" max="20">
+          </div>
+          <div class="form-row">
+            <label>Garages</label>
+            <input type="number" id="propGarages" placeholder="1" min="0" max="10">
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-row">
+            <label>Property type <span class="req">*</span></label>
+            <select id="propType">
+              <option value="">Select…</option>
+              <option>House</option>
+              <option>Townhouse</option>
+              <option>Apartment</option>
+              <option>Lifestyle block</option>
+              <option>Section + house</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>Land area (m²)</label>
+            <input type="number" id="propLand" placeholder="650">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label>Description <span class="req">*</span></label>
+          <textarea id="propDesc" rows="5" placeholder="Describe your home — standout features, recent renovations, school zones, what you love about the neighbourhood…"></textarea>
+        </div>
+
+        <div class="form-row">
+          <label>Swap preference <span class="req">*</span></label>
+          <div class="swap-options">
+            <label class="swap-option">
+              <input type="radio" name="swapPref" value="up">
+              <div class="swap-option-content">
+                <strong>Upsizing</strong>
+                <span>I want a bigger or more valuable home</span>
+              </div>
+            </label>
+            <label class="swap-option">
+              <input type="radio" name="swapPref" value="down">
+              <div class="swap-option-content">
+                <strong>Downsizing</strong>
+                <span>I want a smaller or cheaper home</span>
+              </div>
+            </label>
+            <label class="swap-option">
+              <input type="radio" name="swapPref" value="lateral">
+              <div class="swap-option-content">
+                <strong>Lateral swap</strong>
+                <span>Roughly equal value swap</span>
+              </div>
+            </label>
+            <label class="swap-option">
+              <input type="radio" name="swapPref" value="any">
+              <div class="swap-option-content">
+                <strong>Open to any swap</strong>
+                <span>Happy to consider all offers</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label>Preferred swap location</label>
+          <input type="text" id="propSwapLocation" placeholder="e.g. Wellington region, open to NZ-wide">
+        </div>
+      </div>
+
+      <div id="step2Error" class="form-error" style="display:none;margin-top:1rem"></div>
+      <div class="form-actions" style="flex-direction:row;gap:10px">
+        <button class="btn btn-outline" onclick="goToStep(1)">← Back</button>
+        <button class="btn btn-primary btn-lg" onclick="proceedToStep3()">Continue to payment →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: PAYMENT -->
+    <div id="step3" class="reg-step-content" style="display:none">
+      <div class="form-card">
+        <h2>Payment</h2>
+        <p class="card-subtitle">Secure payment via Stripe. Your listing goes live after we verify your RV.</p>
+
+        <div class="fee-calculator">
+          <div class="fee-calc-header"><span>📊 Order summary</span></div>
+          <div class="fee-calc-body">
+            <div class="fee-line">
+              <span>Registration fee (0.2% of RV)</span>
+              <span id="paymentFeeDisplay">—</span>
+            </div>
+            <div class="fee-line fee-included">
+              <span>✅ First 3 months included</span>
+              <span>No charge until month 4</span>
+            </div>
+            <div class="fee-line fee-included">
+              <span>📅 From month 4</span>
+              <span>$40.00/month</span>
+            </div>
+            <div class="fee-line fee-total">
+              <span>Due today</span>
+              <span id="paymentTotalDisplay">—</span>
+            </div>
+          </div>
+          <div class="fee-profit-note">
+            💰 <strong>Zero commission forever.</strong> Keep 100% of your profit when you sell or swap.
+          </div>
+        </div>
+
+        <div class="form-row" style="margin-top:1.5rem">
+          <label>Card details <span class="req">*</span></label>
+          <div id="cardElement" class="stripe-card-element"></div>
+          <div id="cardError" class="form-error" style="display:none;margin-top:8px"></div>
+        </div>
+
+        <div class="form-row">
+          <label class="checkbox-label">
+            <input type="checkbox" id="agreeTerms" required>
+            I agree to the <a href="terms.html" target="_blank">terms of use</a> and <a href="privacy.html" target="_blank">privacy policy</a>. I confirm the RV entered is accurate to the best of my knowledge.
+          </label>
+        </div>
+
+        <div class="form-row">
+          <label class="checkbox-label">
+            <input type="checkbox" id="agreeNoRefund">
+            I understand that registration fees are non-refundable and access ends when my listing is removed or property is sold.
+          </label>
+        </div>
+      </div>
+
+      <div id="step3Error" class="form-error" style="display:none;margin-top:1rem"></div>
+      <div class="form-actions" style="flex-direction:row;gap:10px">
+        <button class="btn btn-outline" onclick="goToStep(2)">← Back</button>
+        <button class="btn btn-primary btn-lg" id="payBtn" onclick="processPayment()">
+          Pay and register →
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 4: SUCCESS -->
+    <div id="step4" class="reg-step-content" style="display:none">
+      <div class="form-card" style="text-align:center;padding:3rem 2rem">
+        <div style="font-size:56px;margin-bottom:1rem">🎉</div>
+        <h2 style="margin-bottom:0.75rem">You're registered!</h2>
+        <p style="color:var(--text-mid);margin-bottom:1.5rem;font-size:15px">Your listing is now <strong>pending verification</strong>. We'll check your RV against council records and have your listing live within 1 business day.</p>
+
+        <div class="verification-status-box">
+          <div class="vs-item">
+            <span class="vs-icon">⏳</span>
+            <div>
+              <strong>RV Verification</strong>
+              <span>We're checking your RV against council records</span>
+            </div>
+          </div>
+          <div class="vs-item">
+            <span class="vs-icon">🪪</span>
+            <div>
+              <strong>ID Verification</strong>
+              <span>We're reviewing your identity documents</span>
+            </div>
+          </div>
+          <div class="vs-item">
+            <span class="vs-icon">📧</span>
+            <div>
+              <strong>Email confirmation</strong>
+              <span>You'll receive an email when your listing goes live</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="profit-reminder">
+          💰 Remember — when you sell or swap, <strong>zero commission</strong> means every dollar of profit stays with you.
+        </div>
+
+        <a href="dashboard.html" class="btn btn-primary btn-lg" style="margin-top:1.5rem">Go to my dashboard →</a>
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <span class="logo">Nest<span>X</span></span>
+        <p>New Zealand's verified private home swap marketplace.</p>
+      </div>
+      <div class="footer-links">
+        <a href="../browse.html">Browse</a>
+        <a href="about.html">About</a>
+        <a href="conveyancers.html">Conveyancers</a>
+        <a href="pricing.html">Pricing</a>
+        <a href="terms.html">Terms of use</a>
+        <a href="privacy.html">Privacy policy</a>
+        <a href="mailto:hello@nestx.co.nz">Contact</a>
+      </div>
+      <p class="footer-disclaimer">⚖️ Nest X is a private listing platform only. We are not a licensed real estate agent and do not provide property advice.</p>
+    </div>
+  </footer>
+
+  <script src="../js/supabase.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/register-lister.js"></script>
+</body>
+</html>
