@@ -1,91 +1,61 @@
-// ─────────────────────────────────────────────────────────
-//  BROWSE PAGE — loads all listings with filter + sort
-// ─────────────────────────────────────────────────────────
+const SUPABASE_URL = 'https://dacpuhfkuprqqaqoxwll.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRhY3B1aGZrdXBycXFhcW94d2xsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMDQ3NzYsImV4cCI6MjA5NjU4MDc3Nn0.sRr2TMnrLCZSJOqDzW7dnsyUpSsm6KtmpyqTVD3g7d8';
 
-let allListings = [];
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-async function loadAllListings() {
-  const grid = document.getElementById('browseGrid');
-
-  const { data, error } = await db
-    .from('listings')
-    .select('*')
-    .eq('active', true)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    grid.innerHTML = '<div class="empty-state"><p>Could not load listings. Please try again.</p></div>';
-    return;
-  }
-
-  allListings = data || [];
-  applyFilters();
+function fmt(n) {
+  return '$' + Number(n).toLocaleString('en-NZ');
 }
 
-function applyFilters() {
-  const search   = (document.getElementById('searchInput')?.value || '').toLowerCase();
-  const swap     = document.getElementById('filterSwap')?.value || '';
-  const beds     = document.getElementById('filterBeds')?.value || '';
-  const maxPrice = document.getElementById('filterPrice')?.value || '';
-  const propType = document.getElementById('filterType')?.value || '';
-  const sortBy   = document.getElementById('sortBy')?.value || 'newest';
-
-  let filtered = [...allListings];
-
-  if (search) {
-    filtered = filtered.filter(l =>
-      l.address.toLowerCase().includes(search) ||
-      l.description?.toLowerCase().includes(search) ||
-      l.swap_location?.toLowerCase().includes(search)
-    );
-  }
-  if (swap) {
-    filtered = filtered.filter(l => l.swap_pref === swap || l.swap_pref === 'any');
-  }
-  if (beds) {
-    filtered = filtered.filter(l => beds === '4' ? l.beds >= 4 : l.beds == beds);
-  }
-  if (maxPrice) {
-    filtered = filtered.filter(l => l.price <= parseInt(maxPrice));
-  }
-  if (propType) {
-    filtered = filtered.filter(l => l.property_type === propType);
-  }
-
-  // Sort
-  if (sortBy === 'price_asc')  filtered.sort((a, b) => a.price - b.price);
-  if (sortBy === 'price_desc') filtered.sort((a, b) => b.price - a.price);
-  if (sortBy === 'newest')     filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-  renderGrid(filtered);
+function swapLabel(pref) {
+  const map = { up: 'Upsizing', down: 'Downsizing', lateral: 'Lateral swap', any: 'Open swap' };
+  return map[pref] || pref;
 }
 
-function renderGrid(listings) {
-  const grid = document.getElementById('browseGrid');
-  const count = document.getElementById('resultsCount');
+function swapTagClass(pref) {
+  const map = { up: 'tag-up', down: 'tag-down', lateral: 'tag-lateral', any: 'tag-any' };
+  return map[pref] || 'tag-swap';
+}
 
-  if (count) count.textContent = `${listings.length} home${listings.length !== 1 ? 's' : ''} found`;
-
-  if (listings.length === 0) {
-    grid.innerHTML = `
-      <div class="empty-state" style="grid-column:1/-1">
-        <p>No listings match your search.</p>
-        <button class="btn btn-outline" onclick="clearFilters()">Clear filters</button>
-      </div>`;
-    return;
+function showToast(msg) {
+  let t = document.getElementById('toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toast';
+    t.className = 'toast';
+    document.body.appendChild(t);
   }
-
-  grid.innerHTML = listings.map(buildCardHTML).join('');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-function clearFilters() {
-  document.getElementById('searchInput').value = '';
-  document.getElementById('filterSwap').value = '';
-  document.getElementById('filterBeds').value = '';
-  document.getElementById('filterPrice').value = '';
-  document.getElementById('filterType').value = '';
-  document.getElementById('sortBy').value = 'newest';
-  applyFilters();
+function buildCardHTML(listing) {
+  const coverPhoto = listing.photos && listing.photos.length > 0
+    ? `<img src="${listing.photos[0]}" alt="Photo of ${listing.address}" loading="lazy">`
+    : `<span>${listing.emoji || '🏡'}</span>`;
+
+  return `
+    <a href="pages/listing.html?id=${listing.id}" class="listing-card">
+      <div class="card-img">${coverPhoto}</div>
+      <div class="card-body">
+        <div class="card-price">${fmt(listing.price)}</div>
+        <div class="card-address">${listing.address}</div>
+        <div class="card-meta">
+          <span>🛏 ${listing.beds} bed</span>
+          <span>🚿 ${listing.baths} bath</span>
+          <span>${listing.property_type}</span>
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-swap">Swap ready</span>
+          <span class="tag ${swapTagClass(listing.swap_pref)}">${swapLabel(listing.swap_pref)}</span>
+        </div>
+      </div>
+    </a>
+  `;
 }
 
-loadAllListings();
+function toggleMenu() {
+  document.querySelector('.nav-links').classList.toggle('open');
+}
