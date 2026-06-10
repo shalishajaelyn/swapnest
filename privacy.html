@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About Nest X — NZ Home Swap Marketplace</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="../index.html" class="logo">Nest<span>X</span></a>
+    <div class="nav-links">
+      <a href="../browse.html">Browse homes</a>
+      <a href="about.html" class="active">About</a>
+      <a href="conveyancers.html">Conveyancers</a>
+      <a href="#" id="myListingsLink" style="display:none">My listings</a>
+      <span id="userEmail" class="user-email"></span>
+      <button id="authBtn" class="btn btn-outline" onclick="handleAuth()">Sign in</button>
+      <a href="../post.html" class="btn btn-primary">List your home</a>
+    </div>
+    <button class="hamburger" onclick="toggleMenu()">&#9776;</button>
+  </nav>
+
+  <div class="disclaimer-banner">
+    <div class="container">
+      ⚖️ Nest X is a private listing platform only. We are <strong>not a licensed real estate agent</strong> and do not provide property advice.
+    </div>
+  </div>
+
+  <div class="page-header">
+    <div class="container">
+      <h1>About Nest X</h1>
+      <p>New Zealand's verified private home swap marketplace</p>
+    </div>
+  </div>
+
+  <div class="container about-layout">
+
+    <!-- ABOUT -->
+    <section class="about-section">
+      <div class="about-intro">
+        <h2>What is Nest X?</h2>
+        <p>Nest X is New Zealand's first dedicated home swap marketplace. We connect homeowners who want to sell their property with others who want to do the same — and explore whether swapping makes more sense than the traditional sale process.</p>
+        <p>A swap sale works like two private sales happening simultaneously. Both parties agree on their respective property values, the owner of the lower-value property pays the difference to the other, and a licensed NZ conveyancer handles both legal transfers on the same settlement day.</p>
+        <p>Nest X is a <strong>private listing platform only</strong>. We connect willing parties — we do not act as a real estate agent, provide property valuations, offer legal advice, or negotiate on anyone's behalf. We strongly recommend all users seek independent legal and financial advice before entering any agreement.</p>
+      </div>
+    </section>
+
+    <!-- TRUST & SAFETY -->
+    <section class="about-section">
+      <h2>Is Nest X safe and legitimate?</h2>
+      <p>We've built safety into every step of the platform. Here's exactly what we do to protect you:</p>
+
+      <div class="trust-detail-grid">
+        <div class="trust-detail-card">
+          <div class="trust-detail-icon">🪪</div>
+          <div>
+            <h3>Identity Verification</h3>
+            <p>Every member is required to submit a government-issued photo ID (driver's licence or passport) before listing a property or sending swap offers. This ensures every person on the platform is who they say they are.</p>
+          </div>
+        </div>
+        <div class="trust-detail-card">
+          <div class="trust-detail-icon">🚔</div>
+          <div>
+            <h3>Optional Police Check</h3>
+            <p>Members can optionally submit a NZ Police vetting check. Those who do receive a verified badge on their profile, giving other users extra confidence. We recommend requesting this from anyone you plan to enter a transaction with.</p>
+          </div>
+        </div>
+        <div class="trust-detail-card">
+          <div class="trust-detail-icon">🔒</div>
+          <div>
+            <h3>Protected Contact Details</h3>
+            <p>Your full name, email address and phone number are never shown publicly. Only your first name and last initial appear on listings. Full contact details are only revealed once both parties have agreed to connect and the platform fee has been paid.</p>
+          </div>
+        </div>
+        <div class="trust-detail-card">
+          <div class="trust-detail-icon">⚖️</div>
+          <div>
+            <h3>Conveyancer Required</h3>
+            <p>No swap can be completed without a licensed NZ conveyancer. We provide a directory of conveyancers experienced in simultaneous settlements. This ensures every transaction is legally binding and properly executed.</p>
+          </div>
+        </div>
+        <div class="trust-detail-card">
+          <div class="trust-detail-icon">🏛️</div>
+          <div>
+            <h3>We Are Not Real Estate Agents</h3>
+            <p>Nest X operates as a private listing platform under NZ law. We do not carry out real estate agency work, provide property valuations, or give advice on whether a swap is a good deal for you. Always seek independent advice from a registered valuer and licensed conveyancer.</p>
+          </div>
+        </div>
+        <div class="trust-detail-card">
+          <div class="trust-detail-icon">🛡️</div>
+          <div>
+            <h3>Your Data is Protected</h3>
+            <p>We comply with the NZ Privacy Act 2020. Your personal information is stored securely and never shared with third parties without your consent. You can request deletion of your data at any time by contacting hello@nestx.co.nz.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS DETAIL -->
+    <section class="about-section">
+      <h2>How a swap sale works — step by step</h2>
+      <div class="steps-detail">
+        <div class="step-detail">
+          <div class="step-num">1</div>
+          <div>
+            <h3>Create your account and verify your identity</h3>
+            <p>Sign up with your email address. You'll be asked to upload a government-issued photo ID. This is reviewed manually and your verified badge is applied within 1–2 business days. Optionally submit a police check for an additional trust badge.</p>
+          </div>
+        </div>
+        <div class="step-detail">
+          <div class="step-num">2</div>
+          <div>
+            <h3>List your property</h3>
+            <p>Add your property details, photos, asking price, and swap preference. Only your first name and last initial appear publicly. Your full contact details remain hidden.</p>
+          </div>
+        </div>
+        <div class="step-detail">
+          <div class="step-num">3</div>
+          <div>
+            <h3>Browse and send swap offers</h3>
+            <p>Browse other listings and send a swap offer including your property details and the cash difference you're proposing. The seller reviews your offer and can accept, decline, or counter.</p>
+          </div>
+        </div>
+        <div class="step-detail">
+          <div class="step-num">4</div>
+          <div>
+            <h3>Both parties agree to connect</h3>
+            <p>When both parties want to proceed, they confirm on the platform. Full contact details are then revealed to both parties. We recommend getting independent valuations at this stage before committing.</p>
+          </div>
+        </div>
+        <div class="step-detail">
+          <div class="step-num">5</div>
+          <div>
+            <h3>Engage a conveyancer</h3>
+            <p>Both parties select a licensed NZ conveyancer — ideally one experienced in simultaneous settlements. Use our directory for recommendations. Your conveyancer drafts the sale and purchase agreements for both properties.</p>
+          </div>
+        </div>
+        <div class="step-detail">
+          <div class="step-num">6</div>
+          <div>
+            <h3>Settlement day</h3>
+            <p>Both property transfers complete simultaneously on the agreed settlement date. The cash difference is transferred as part of the settlement. Keys are exchanged. Done.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="about-section" id="faq">
+      <h2>Frequently asked questions</h2>
+      <div class="faq-list">
+
+        <div class="faq-item-full">
+          <h4>Is a home swap legal in New Zealand?</h4>
+          <p>Yes, completely. Private property sales are legal in NZ without a real estate agent. A swap sale is simply two simultaneous private sales. The legal transfer of both properties is handled by licensed conveyancers under NZ property law.</p>
+        </div>
+
+        <div class="faq-item-full">
+          <h4>Do I need a real estate agent?</h4>
+          <p>No. You are not required to use a real estate agent to sell or swap your property privately in New Zealand. You do need a licensed conveyancer to prepare and execute the legal transfer documents. Nest X strongly recommends engaging a conveyancer early in the process.</p>
+        </div>
+
+        <div class="faq-item-full">
+          <h4>How is the cash difference calculated and paid?</h4>
+          <p>Both parties agree on the value of each property — ideally based on independent registered valuations. The difference between the two values is paid by the owner of the lower-value property to the owner of the higher-value property. This payment is handled by the conveyancer as part of the settlement process.</p>
+        </div>
+
+        <div class="faq-item-full">
+          <h4>What if we can't agree on property values?</h4>
+          <p>Either party can commission an independent registered valuation (typically $800–$1,200 in NZ). If you still can't agree, you are under no obligation to proceed — there is no binding agreement until both parties have signed formal sale and purchase agreements through their conveyancers.</p>
+        </div>
+
+        <div class="faq-item-full">
+          <h4>What does Nest X charge?</h4>
+          <p>Listing your property is currently free. When both parties agree to connect and reveal contact details, a small platform fee applies. There are no hidden charges and no commission on the value of your property.</p>
+        </div>
+
+        <div class="faq-item-full">
+          <h4>What if the other party backs out?</h4>
+          <p>Until formal sale and purchase agreements are signed with your conveyancer, either party can withdraw without penalty. Once signed, standard NZ property law conditions apply. Your conveyancer will advise you on any conditions or exit clauses in your agreement.</p>
+        </div>
+
+        <div class="faq-item-full">
+          <h4>Can I swap with someone in a different city?</h4>
+          <p>Yes, though most swaps work best within the same region for practical reasons. Cross-city swaps do happen — particularly between people specifically looking to relocate.</p>
+        </div>
+
+        <div class="faq-item-full">
+          <h4>What if I have a mortgage?</h4>
+          <p>If either property has a mortgage, your bank will need to be involved in the settlement process. Your conveyancer handles this coordination. Speak to your bank early — most mortgages are portable or can be discharged and re-drawn on the new property.</p>
+        </div>
+
+        <div class="faq-item-full">
+          <h4>Is Nest X a real estate agent?</h4>
+          <p>No. Nest X is a private listing platform — an online noticeboard that connects willing parties. We are not licensed under the Real Estate Agents Act 2008 and do not carry out real estate agency work. We do not negotiate on your behalf, provide property valuations, or advise you on whether a deal is good for you. Always seek independent advice.</p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section class="about-section about-contact">
+      <h2>Get in touch</h2>
+      <p>Have a question not answered here? We're here to help.</p>
+      <a href="mailto:hello@nestx.co.nz" class="btn btn-primary">hello@nestx.co.nz</a>
+    </section>
+
+  </div>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <span class="logo">Nest<span>X</span></span>
+        <p>New Zealand's verified private home swap marketplace.</p>
+      </div>
+      <div class="footer-links">
+        <a href="../browse.html">Browse</a>
+        <a href="../post.html">List a home</a>
+        <a href="about.html">About</a>
+        <a href="conveyancers.html">Conveyancers</a>
+        <a href="terms.html">Terms of use</a>
+        <a href="privacy.html">Privacy policy</a>
+        <a href="mailto:hello@nestx.co.nz">Contact</a>
+      </div>
+      <p class="footer-disclaimer">⚖️ Nest X is a private listing platform only. We are not a licensed real estate agent and do not provide property advice. All transactions must be completed through a licensed NZ conveyancer.</p>
+    </div>
+  </footer>
+
+  <script src="../js/supabase.js"></script>
+  <script src="../js/auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conveyancers — Nest X</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="../index.html" class="logo">Nest<span>X</span></a>
+    <div class="nav-links">
+      <a href="../browse.html">Browse homes</a>
+      <a href="about.html">About</a>
+      <a href="conveyancers.html" class="active">Conveyancers</a>
+      <a href="#" id="myListingsLink" style="display:none">My listings</a>
+      <span id="userEmail" class="user-email"></span>
+      <button id="authBtn" class="btn btn-outline" onclick="handleAuth()">Sign in</button>
+      <a href="../post.html" class="btn btn-primary">List your home</a>
+    </div>
+    <button class="hamburger" onclick="toggleMenu()">&#9776;</button>
+  </nav>
+
+  <div class="disclaimer-banner">
+    <div class="container">
+      ⚖️ Nest X does not endorse or take responsibility for any conveyancer listed. Listings are for directory purposes only. Always verify credentials independently.
+    </div>
+  </div>
+
+  <div class="page-header">
+    <div class="container">
+      <h1>NZ Conveyancer Directory</h1>
+      <p>Licensed conveyancers experienced in NZ property transactions</p>
+    </div>
+  </div>
+
+  <div class="container conveyancer-layout">
+
+    <div class="conveyancer-intro">
+      <div class="conveyancer-explainer">
+        <h2>Why you need a conveyancer</h2>
+        <p>Every property swap on Nest X must be completed through a licensed NZ conveyancer. They prepare the sale and purchase agreements, conduct title searches, coordinate with banks, and ensure both property transfers settle simultaneously and legally.</p>
+        <p>For a swap sale, we recommend choosing a conveyancer who has experience with <strong>simultaneous settlements</strong> — where two properties transfer ownership on the same day. Not all conveyancers handle these regularly, so it's worth asking upfront.</p>
+        <div class="conveyancer-tip">
+          <strong>💡 Tip:</strong> Both parties in a swap can use different conveyancers — in fact, it's recommended so each party has independent legal representation.
+        </div>
+      </div>
+
+      <div class="conveyancer-cta-box">
+        <h3>Are you a conveyancer?</h3>
+        <p>Get listed in our directory and connect with NZ homeowners looking to swap. Free to list during our launch period.</p>
+        <a href="mailto:hello@nestx.co.nz?subject=Conveyancer directory listing" class="btn btn-primary">Request a listing</a>
+      </div>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="conveyancer-filters">
+      <input type="text" id="convSearch" placeholder="Search by name, region or city…" oninput="filterConveyancers()">
+      <select id="convRegion" onchange="filterConveyancers()">
+        <option value="">All regions</option>
+        <option value="Auckland">Auckland</option>
+        <option value="Wellington">Wellington</option>
+        <option value="Canterbury">Canterbury</option>
+        <option value="Waikato">Waikato</option>
+        <option value="Bay of Plenty">Bay of Plenty</option>
+        <option value="Otago">Otago</option>
+        <option value="Manawatu">Manawatu-Whanganui</option>
+        <option value="Hawke's Bay">Hawke's Bay</option>
+        <option value="Northland">Northland</option>
+        <option value="Nelson">Nelson/Marlborough</option>
+      </select>
+    </div>
+
+    <!-- DIRECTORY -->
+    <div class="conveyancer-grid" id="conveyancerGrid">
+
+      <!-- PLACEHOLDER LISTINGS — replace with real conveyancers -->
+      <div class="conveyancer-card" data-region="Wellington">
+        <div class="conveyancer-header">
+          <div>
+            <div class="conveyancer-name">Chapman Tripp</div>
+            <div class="conveyancer-location">📍 Wellington CBD</div>
+          </div>
+          <span class="conv-badge">Swap experienced</span>
+        </div>
+        <div class="conveyancer-details">
+          <p>Full-service property law firm with extensive experience in simultaneous settlements and complex property transactions throughout the Wellington region.</p>
+        </div>
+        <div class="conveyancer-contact">
+          <span>🌐 <a href="https://www.chapmantripp.com" target="_blank">chapmantripp.com</a></span>
+          <span>📞 04 499 5999</span>
+        </div>
+        <div class="conveyancer-tags">
+          <span class="conv-tag">Simultaneous settlements</span>
+          <span class="conv-tag">Residential</span>
+        </div>
+      </div>
+
+      <div class="conveyancer-card" data-region="Auckland">
+        <div class="conveyancer-header">
+          <div>
+            <div class="conveyancer-name">Conveyancing.co.nz</div>
+            <div class="conveyancer-location">📍 Auckland — NZ wide</div>
+          </div>
+          <span class="conv-badge">Online friendly</span>
+        </div>
+        <div class="conveyancer-details">
+          <p>Specialist residential conveyancing firm operating across New Zealand. Fixed-fee pricing and experience with private sales and simultaneous transfers.</p>
+        </div>
+        <div class="conveyancer-contact">
+          <span>🌐 <a href="https://www.conveyancing.co.nz" target="_blank">conveyancing.co.nz</a></span>
+          <span>📞 0800 123 456</span>
+        </div>
+        <div class="conveyancer-tags">
+          <span class="conv-tag">Fixed fee</span>
+          <span class="conv-tag">NZ wide</span>
+          <span class="conv-tag">Private sales</span>
+        </div>
+      </div>
+
+      <div class="conveyancer-card" data-region="Canterbury">
+        <div class="conveyancer-header">
+          <div>
+            <div class="conveyancer-name">Saunders Robinson Brown</div>
+            <div class="conveyancer-location">📍 Christchurch</div>
+          </div>
+        </div>
+        <div class="conveyancer-details">
+          <p>Christchurch-based property law specialists with a strong residential conveyancing practice. Experience in unconventional property transactions.</p>
+        </div>
+        <div class="conveyancer-contact">
+          <span>🌐 <a href="https://www.srb.co.nz" target="_blank">srb.co.nz</a></span>
+          <span>📞 03 379 4430</span>
+        </div>
+        <div class="conveyancer-tags">
+          <span class="conv-tag">Residential</span>
+          <span class="conv-tag">Canterbury</span>
+        </div>
+      </div>
+
+      <div class="conveyancer-card" data-region="Waikato">
+        <div class="conveyancer-header">
+          <div>
+            <div class="conveyancer-name">Tompkins Wake</div>
+            <div class="conveyancer-location">📍 Hamilton</div>
+          </div>
+        </div>
+        <div class="conveyancer-details">
+          <p>One of the Waikato's leading law firms. Strong property team handling residential and rural transactions across the Waikato and Bay of Plenty regions.</p>
+        </div>
+        <div class="conveyancer-contact">
+          <span>🌐 <a href="https://www.tompkinswake.co.nz" target="_blank">tompkinswake.co.nz</a></span>
+          <span>📞 07 839 4771</span>
+        </div>
+        <div class="conveyancer-tags">
+          <span class="conv-tag">Residential</span>
+          <span class="conv-tag">Rural</span>
+          <span class="conv-tag">Waikato</span>
+        </div>
+      </div>
+
+      <div class="conveyancer-card" data-region="Wellington">
+        <div class="conveyancer-header">
+          <div>
+            <div class="conveyancer-name">Morrison Kent</div>
+            <div class="conveyancer-location">📍 Wellington &amp; Lower Hutt</div>
+          </div>
+          <span class="conv-badge">Swap experienced</span>
+        </div>
+        <div class="conveyancer-details">
+          <p>Wellington residential property specialists with offices in Wellington CBD and Lower Hutt. Experienced in private sales and complex settlements.</p>
+        </div>
+        <div class="conveyancer-contact">
+          <span>🌐 <a href="https://www.morrisonkent.com" target="_blank">morrisonkent.com</a></span>
+          <span>📞 04 472 0020</span>
+        </div>
+        <div class="conveyancer-tags">
+          <span class="conv-tag">Simultaneous settlements</span>
+          <span class="conv-tag">Wellington</span>
+          <span class="conv-tag">Hutt Valley</span>
+        </div>
+      </div>
+
+      <div class="conveyancer-card" data-region="Otago">
+        <div class="conveyancer-header">
+          <div>
+            <div class="conveyancer-name">Anderson Lloyd</div>
+            <div class="conveyancer-location">📍 Dunedin &amp; Queenstown</div>
+          </div>
+        </div>
+        <div class="conveyancer-details">
+          <p>Leading Otago and Southland law firm with a dedicated property team. Handles residential, rural and lifestyle property across the lower South Island.</p>
+        </div>
+        <div class="conveyancer-contact">
+          <span>🌐 <a href="https://www.al.nz" target="_blank">al.nz</a></span>
+          <span>📞 03 477 3973</span>
+        </div>
+        <div class="conveyancer-tags">
+          <span class="conv-tag">Residential</span>
+          <span class="conv-tag">Otago</span>
+          <span class="conv-tag">Queenstown</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="conveyancer-disclaimer">
+      <p>⚖️ <strong>Important:</strong> Nest X does not endorse, recommend or take responsibility for any conveyancer listed in this directory. This directory is provided as a convenience only. Always verify a conveyancer's credentials independently via the <a href="https://www.nzls.org.nz" target="_blank">NZ Law Society</a> before engaging their services. Conveyancer details may change — always confirm contact information directly.</p>
+    </div>
+
+  </div>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <span class="logo">Nest<span>X</span></span>
+        <p>New Zealand's verified private home swap marketplace.</p>
+      </div>
+      <div class="footer-links">
+        <a href="../browse.html">Browse</a>
+        <a href="../post.html">List a home</a>
+        <a href="about.html">About</a>
+        <a href="conveyancers.html">Conveyancers</a>
+        <a href="terms.html">Terms of use</a>
+        <a href="privacy.html">Privacy policy</a>
+        <a href="mailto:hello@nestx.co.nz">Contact</a>
+      </div>
+      <p class="footer-disclaimer">⚖️ Nest X is a private listing platform only. We are not a licensed real estate agent and do not provide property advice.</p>
+    </div>
+  </footer>
+
+  <script src="../js/supabase.js"></script>
+  <script src="../js/auth.js"></script>
+  <script>
+    function filterConveyancers() {
+      const search = document.getElementById('convSearch').value.toLowerCase();
+      const region = document.getElementById('convRegion').value;
+      document.querySelectorAll('.conveyancer-card').forEach(card => {
+        const text = card.textContent.toLowerCase();
+        const cardRegion = card.dataset.region || '';
+        const matchSearch = !search || text.includes(search);
+        const matchRegion = !region || cardRegion.includes(region);
+        card.style.display = matchSearch && matchRegion ? '' : 'none';
+      });
+    }
+  </script>
+</body>
+</html>
