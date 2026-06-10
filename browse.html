@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Browse homes — SwapNest</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="index.html" class="logo">swap<span>nest</span></a>
+    <div class="nav-links">
+      <a href="browse.html" class="active">Browse homes</a>
+      <a href="#" id="myListingsLink" style="display:none">My listings</a>
+      <span id="userEmail" class="user-email"></span>
+      <button id="authBtn" class="btn btn-outline" onclick="handleAuth()">Sign in</button>
+      <a href="post.html" class="btn btn-primary">List your home</a>
+    </div>
+    <button class="hamburger" onclick="toggleMenu()">&#9776;</button>
+  </nav>
+
+  <div class="page-header">
+    <div class="container">
+      <h1>Browse homes</h1>
+      <p>Find a property to swap with yours</p>
+    </div>
+  </div>
+
+  <div class="container browse-layout">
+
+    <!-- FILTERS -->
+    <aside class="filters-panel">
+      <h3>Filter</h3>
+
+      <div class="filter-group">
+        <label>Search</label>
+        <input type="text" id="searchInput" placeholder="Suburb, city, region…" oninput="applyFilters()">
+      </div>
+
+      <div class="filter-group">
+        <label>Swap type</label>
+        <select id="filterSwap" onchange="applyFilters()">
+          <option value="">Any</option>
+          <option value="up">Upsizing</option>
+          <option value="down">Downsizing</option>
+          <option value="lateral">Lateral swap</option>
+          <option value="any">Open to any</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Bedrooms</label>
+        <select id="filterBeds" onchange="applyFilters()">
+          <option value="">Any</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4+</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Max price</label>
+        <select id="filterPrice" onchange="applyFilters()">
+          <option value="">Any</option>
+          <option value="500000">Under $500k</option>
+          <option value="750000">Under $750k</option>
+          <option value="1000000">Under $1m</option>
+          <option value="1500000">Under $1.5m</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Property type</label>
+        <select id="filterType" onchange="applyFilters()">
+          <option value="">Any</option>
+          <option value="House">House</option>
+          <option value="Townhouse">Townhouse</option>
+          <option value="Apartment">Apartment</option>
+        </select>
+      </div>
+
+      <button class="btn btn-outline btn-full" onclick="clearFilters()">Clear filters</button>
+    </aside>
+
+    <!-- LISTINGS -->
+    <main class="listings-main">
+      <div class="listings-toolbar">
+        <span id="resultsCount" class="results-count"></span>
+        <select id="sortBy" onchange="applyFilters()">
+          <option value="newest">Newest first</option>
+          <option value="price_asc">Price: low to high</option>
+          <option value="price_desc">Price: high to low</option>
+        </select>
+      </div>
+      <div class="listings-grid" id="browseGrid">
+        <div class="loading-state">Loading listings…</div>
+      </div>
+    </main>
+
+  </div>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <span class="logo">swap<span>nest</span></span>
+        <p>New Zealand's private home swap marketplace.</p>
+      </div>
+      <div class="footer-links">
+        <a href="browse.html">Browse</a>
+        <a href="post.html">List a home</a>
+        <a href="pages/terms.html">Terms of use</a>
+        <a href="pages/privacy.html">Privacy policy</a>
+        <a href="mailto:hello@swapnest.co.nz">Contact</a>
+      </div>
+      <p class="footer-disclaimer">SwapNest connects buyers and sellers. We are not a licensed real estate agent and do not provide property advice.</p>
+    </div>
+  </footer>
+
+  <script src="js/supabase.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/browse.js"></script>
+</body>
+</html>
