@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Listing — SwapNest</title>
+  <title>My listings — SwapNest</title>
   <link rel="stylesheet" href="../css/style.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -13,82 +13,45 @@
     <a href="../index.html" class="logo">swap<span>nest</span></a>
     <div class="nav-links">
       <a href="../browse.html">Browse homes</a>
-      <a href="#" id="myListingsLink" style="display:none">My listings</a>
+      <a href="about.html">About</a>
+      <a href="conveyancers.html">Conveyancers</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="dashboard.html" class="active" id="myListingsLink">My listings</a>
       <span id="userEmail" class="user-email"></span>
       <button id="authBtn" class="btn btn-outline" onclick="handleAuth()">Sign in</button>
-      <a href="../post.html" class="btn btn-primary">List your home</a>
+      <a href="register-lister.html" class="btn btn-primary">List your home</a>
     </div>
     <button class="hamburger" onclick="toggleMenu()">&#9776;</button>
   </nav>
 
-  <div class="container listing-detail-layout" id="listingDetail">
-    <div class="loading-state">Loading listing…</div>
+  <div class="page-header">
+    <div class="container">
+      <h1>My listings</h1>
+      <p>Manage your properties and swap offers</p>
+    </div>
   </div>
 
-  <!-- SWAP OFFER MODAL -->
-  <div class="modal-overlay" id="offerModal" style="display:none">
-    <div class="modal">
-      <div class="modal-header">
-        <h2>Make a swap offer</h2>
-        <button class="modal-close" onclick="closeOfferModal()">✕</button>
-      </div>
-      <div class="modal-body">
-        <div class="offer-target-info" id="offerTargetInfo"></div>
-
-        <div class="form-row">
-          <label>Your property address <span class="req">*</span></label>
-          <input type="text" id="o_address" placeholder="e.g. 22 Hill Road, Newtown, Wellington" required>
-        </div>
-        <div class="form-grid-2">
-          <div class="form-row">
-            <label>Your estimated value ($) <span class="req">*</span></label>
-            <input type="number" id="o_value" placeholder="720000" oninput="calcOfferDiff()">
-          </div>
-          <div class="form-row">
-            <label>Cash difference ($)</label>
-            <input type="number" id="o_diff" placeholder="Auto-calculated" readonly style="background:var(--surface)">
-          </div>
-        </div>
-        <div id="diffExplainer" class="diff-explainer"></div>
-        <div class="form-row">
-          <label>Message to seller <span class="req">*</span></label>
-          <textarea id="o_msg" rows="4" placeholder="Introduce your home and why you think it's a great swap. Include details about bedrooms, location, condition, what you love about it…"></textarea>
-        </div>
-        <div class="form-row">
-          <label>Your contact email <span class="req">*</span></label>
-          <input type="email" id="o_email" placeholder="you@example.com">
-        </div>
-        <div class="form-row">
-          <label>Your phone (optional)</label>
-          <input type="tel" id="o_phone" placeholder="021 234 5678">
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-outline" onclick="closeOfferModal()">Cancel</button>
-        <button class="btn btn-primary" onclick="submitOffer()">Send swap offer</button>
-      </div>
-    </div>
+  <div class="container dashboard-layout" id="dashboardContent">
+    <div class="loading-state">Loading…</div>
   </div>
 
   <footer class="footer">
     <div class="container footer-inner">
       <div class="footer-brand">
         <span class="logo">swap<span>nest</span></span>
-        <p>New Zealand's private home swap marketplace.</p>
       </div>
       <div class="footer-links">
         <a href="../browse.html">Browse</a>
         <a href="../post.html">List a home</a>
         <a href="terms.html">Terms of use</a>
         <a href="privacy.html">Privacy policy</a>
-        <a href="mailto:hello@swapnest.co.nz">Contact</a>
       </div>
-      <p class="footer-disclaimer">SwapNest connects buyers and sellers. We are not a licensed real estate agent and do not provide property advice.</p>
+      <p class="footer-disclaimer">SwapNest connects buyers and sellers. We are not a licensed real estate agent.</p>
     </div>
   </footer>
 
   <script src="../js/supabase.js"></script>
   <script src="../js/auth.js"></script>
-  <script src="../js/listing.js"></script>
+  <script src="../js/dashboard.js"></script>
 </body>
 </html>
