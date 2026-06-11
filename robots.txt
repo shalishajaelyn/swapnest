@@ -1,0 +1,6 @@
+# Nest X — robots.txt
+# Preventing search engine indexing during pre-launch
+# Remove this file or update to allow indexing when ready to launch
+
+User-agent: *
+Disallow: /
