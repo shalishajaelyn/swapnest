@@ -1,9 +1,26 @@
+// ─────────────────────────────────────────────────────────
+//  SUPABASE CONFIG
+//  Replace these two values with your own from supabase.com
+//  Project Settings → API → Project URL & anon public key
+// ─────────────────────────────────────────────────────────
+
 const SUPABASE_URL = 'https://dacpuhfkuprqqaqoxwll.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRhY3B1aGZrdXBycXFhcW94d2xsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMDQ3NzYsImV4cCI6MjA5NjU4MDc3Nn0.sRr2TMnrLCZSJOqDzW7dnsyUpSsm6KtmpyqTVD3g7d8';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRhY3B1aGZrdXBycXFhcW94d2xsIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MTAwNDc3NiwiZXhwIjoyMDk2NTgwNzc2fQ.w_4jCyw78VJ2KYXyAEP0VH5M1CEqhvYvOQdVEkipS10
+
+whsec_PbP9VhjhGXUKHRYkaxqWLylv6rvK8Dje';
 
 const { createClient } = supabase;
-const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    persistSession: true,
+    storageKey: 'nestx-auth',
+    storage: window.localStorage,
+    autoRefreshToken: true,
+    detectSessionInUrl: true
+  }
+});
 
+// Helpers
 function fmt(n) {
   return '$' + Number(n).toLocaleString('en-NZ');
 }
