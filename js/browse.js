@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────────────────
 //  BROWSE PAGE — loads all listings with filter + sort
-//  Includes NZ location hierarchy filtering
+//  NZ location hierarchy: Island → Region → City → Suburb
 // ─────────────────────────────────────────────────────────
 
 let allListings = [];
@@ -24,9 +24,9 @@ async function loadAllListings() {
 }
 
 function applyFilters() {
-  const search   = (document.getElementById('searchInput')?.value || '').toLowerCase();
   const region   = document.getElementById('filterRegion')?.value || '';
   const city     = document.getElementById('filterCity')?.value || '';
+  const suburb   = document.getElementById('filterSuburb')?.value || '';
   const swap     = document.getElementById('filterSwap')?.value || '';
   const beds     = document.getElementById('filterBeds')?.value || '';
   const maxPrice = document.getElementById('filterPrice')?.value || '';
@@ -35,49 +35,34 @@ function applyFilters() {
 
   let filtered = [...allListings];
 
-  // Text search
-  if (search) {
-    filtered = filtered.filter(l =>
-      l.address.toLowerCase().includes(search) ||
-      l.description?.toLowerCase().includes(search)
-    );
-  }
-
-  // Region filter
   if (region) {
     filtered = filtered.filter(l =>
       l.address.toLowerCase().includes(region.toLowerCase())
     );
   }
-
-  // City filter
   if (city) {
     filtered = filtered.filter(l =>
       l.address.toLowerCase().includes(city.toLowerCase())
     );
   }
-
-  // Swap type
+  if (suburb) {
+    filtered = filtered.filter(l =>
+      l.address.toLowerCase().includes(suburb.toLowerCase())
+    );
+  }
   if (swap) {
     filtered = filtered.filter(l => l.swap_pref === swap || l.swap_pref === 'any');
   }
-
-  // Bedrooms
   if (beds) {
     filtered = filtered.filter(l => beds === '4' ? l.beds >= 4 : l.beds == beds);
   }
-
-  // Max price
   if (maxPrice) {
     filtered = filtered.filter(l => l.price <= parseInt(maxPrice));
   }
-
-  // Property type
   if (propType) {
     filtered = filtered.filter(l => l.property_type === propType);
   }
 
-  // Sort
   if (sortBy === 'price_asc')  filtered.sort((a, b) => a.price - b.price);
   if (sortBy === 'price_desc') filtered.sort((a, b) => b.price - a.price);
   if (sortBy === 'newest')     filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
@@ -94,7 +79,7 @@ function renderGrid(listings) {
   if (listings.length === 0) {
     grid.innerHTML = `
       <div class="empty-state" style="grid-column:1/-1">
-        <p>No listings match your search.</p>
+        <p>No listings match your filters.</p>
         <button class="btn btn-outline" onclick="clearFilters()">Clear filters</button>
       </div>`;
     return;
@@ -104,14 +89,13 @@ function renderGrid(listings) {
 }
 
 function clearFilters() {
-  document.getElementById('searchInput').value = '';
   document.getElementById('filterIsland').value = '';
   document.getElementById('filterSwap').value = '';
   document.getElementById('filterBeds').value = '';
   document.getElementById('filterPrice').value = '';
   document.getElementById('filterType').value = '';
   document.getElementById('sortBy').value = 'newest';
-  updateRegions(); // resets region and city dropdowns
+  updateRegions();
 }
 
 loadAllListings();
