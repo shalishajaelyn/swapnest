@@ -1,226 +1,97 @@
-// ─────────────────────────────────────────────────────────
-//  POST LISTING — photo uploads + form submission
-// ─────────────────────────────────────────────────────────
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Listing — SwapNest</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
 
-let selectedPhotos = [];   // Array of File objects
-let uploadedPhotoUrls = []; // Array of public URLs after upload
+  <nav class="navbar">
+    <a href="../index.html" class="logo">swap<span>nest</span></a>
+    <div class="nav-links">
+      <a href="../browse.html">Browse homes</a>
+      <a href="about.html">About</a>
+      <a href="conveyancers.html">Conveyancers</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="#" id="myListingsLink" style="display:none">My listings</a>
+      <span id="userEmail" class="user-email"></span>
+      <button id="authBtn" class="btn btn-outline" onclick="handleAuth()">Sign in</button>
+      <a href="register-lister.html" class="btn btn-primary">List your home</a>
+    </div>
+    <button class="hamburger" onclick="toggleMenu()">&#9776;</button>
+  </nav>
 
-// ── AUTH GATE ──
-async function checkAuthForPost() {
-  const { data: { session } } = await db.auth.getSession();
-  const gate = document.getElementById('authGate');
-  const form = document.getElementById('listingForm');
+  <div class="container listing-detail-layout" id="listingDetail">
+    <div class="loading-state">Loading listing…</div>
+  </div>
 
-  if (!gate || !form) return;
-
-  if (session) {
-    gate.style.display = 'none';
-    form.style.display = 'flex';
-    // Pre-fill contact email from account
-    const emailField = document.getElementById('contactEmail');
-    if (emailField) emailField.value = session.user.email;
-  } else {
-    gate.style.display = 'block';
-    form.style.display = 'none';
-  }
-}
-
-// ── PHOTO SELECTION ──
-function handlePhotoSelect(event) {
-  const files = Array.from(event.target.files);
-  const remaining = 10 - selectedPhotos.length;
-  const toAdd = files.slice(0, remaining);
-
-  toAdd.forEach(file => {
-    if (file.size > 10 * 1024 * 1024) {
-      showToast(`${file.name} is over 10MB — skipped`);
-      return;
-    }
-    selectedPhotos.push(file);
-  });
-
-  renderPhotoPreviews();
-
-  // Reset input so same file can be re-selected if needed
-  event.target.value = '';
-}
-
-function renderPhotoPreviews() {
-  const container = document.getElementById('photoPreviews');
-  const prompt = document.getElementById('uploadPrompt');
-
-  if (selectedPhotos.length === 0) {
-    prompt.style.display = 'block';
-    container.innerHTML = '';
-    return;
-  }
-
-  prompt.style.display = 'none';
-  container.innerHTML = selectedPhotos.map((file, i) => {
-    const url = URL.createObjectURL(file);
-    return `
-      <div class="photo-preview-item ${i === 0 ? 'cover-photo' : ''}" id="preview-${i}">
-        <img src="${url}" alt="Photo ${i + 1}">
-        <button class="remove-photo" onclick="removePhoto(${i})" type="button" title="Remove photo">✕</button>
+  <!-- SWAP OFFER MODAL -->
+  <div class="modal-overlay" id="offerModal" style="display:none">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Make a swap offer</h2>
+        <button class="modal-close" onclick="closeOfferModal()">✕</button>
       </div>
-    `;
-  }).join('');
-}
+      <div class="modal-body">
+        <div class="offer-target-info" id="offerTargetInfo"></div>
 
-function removePhoto(index) {
-  selectedPhotos.splice(index, 1);
-  renderPhotoPreviews();
-}
+        <div class="form-row">
+          <label>Your property address <span class="req">*</span></label>
+          <input type="text" id="o_address" placeholder="e.g. 22 Hill Road, Newtown, Wellington" required>
+        </div>
+        <div class="form-grid-2">
+          <div class="form-row">
+            <label>Your estimated value ($) <span class="req">*</span></label>
+            <input type="number" id="o_value" placeholder="720000" oninput="calcOfferDiff()">
+          </div>
+          <div class="form-row">
+            <label>Cash difference ($)</label>
+            <input type="number" id="o_diff" placeholder="Auto-calculated" readonly style="background:var(--surface)">
+          </div>
+        </div>
+        <div id="diffExplainer" class="diff-explainer"></div>
+        <div class="form-row">
+          <label>Message to seller <span class="req">*</span></label>
+          <textarea id="o_msg" rows="4" placeholder="Introduce your home and why you think it's a great swap. Include details about bedrooms, location, condition, what you love about it…"></textarea>
+        </div>
+        <div class="form-row">
+          <label>Your contact email <span class="req">*</span></label>
+          <input type="email" id="o_email" placeholder="you@example.com">
+        </div>
+        <div class="form-row">
+          <label>Your phone (optional)</label>
+          <input type="tel" id="o_phone" placeholder="021 234 5678">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeOfferModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="submitOffer()">Send swap offer</button>
+      </div>
+    </div>
+  </div>
 
-// ── PHOTO UPLOAD TO SUPABASE STORAGE ──
-async function uploadPhotos(userId, listingId) {
-  if (selectedPhotos.length === 0) return [];
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <span class="logo">swap<span>nest</span></span>
+        <p>New Zealand's private home swap marketplace.</p>
+      </div>
+      <div class="footer-links">
+        <a href="../browse.html">Browse</a>
+        <a href="../post.html">List a home</a>
+        <a href="terms.html">Terms of use</a>
+        <a href="privacy.html">Privacy policy</a>
+        <a href="mailto:hello@swapnest.co.nz">Contact</a>
+      </div>
+      <p class="footer-disclaimer">SwapNest connects buyers and sellers. We are not a licensed real estate agent and do not provide property advice.</p>
+    </div>
+  </footer>
 
-  const progressBar = document.getElementById('uploadProgress');
-  const progressFill = document.getElementById('progressFill');
-  const progressText = document.getElementById('progressText');
-
-  progressBar.style.display = 'block';
-  const urls = [];
-
-  for (let i = 0; i < selectedPhotos.length; i++) {
-    const file = selectedPhotos[i];
-    const ext = file.name.split('.').pop();
-    const path = `${userId}/${listingId}/${i}.${ext}`;
-
-    progressText.textContent = `Uploading photo ${i + 1} of ${selectedPhotos.length}…`;
-    progressFill.style.width = `${Math.round((i / selectedPhotos.length) * 100)}%`;
-
-    const { error } = await db.storage
-      .from('listing-photos')
-      .upload(path, file, { upsert: true });
-
-    if (error) {
-      console.error('Upload error:', error);
-      showToast(`Could not upload photo ${i + 1} — skipping`);
-      continue;
-    }
-
-    const { data: { publicUrl } } = db.storage
-      .from('listing-photos')
-      .getPublicUrl(path);
-
-    urls.push(publicUrl);
-  }
-
-  progressFill.style.width = '100%';
-  progressText.textContent = `${urls.length} photo${urls.length !== 1 ? 's' : ''} uploaded`;
-  setTimeout(() => { progressBar.style.display = 'none'; }, 1500);
-
-  return urls;
-}
-
-// ── FORM SUBMISSION ──
-async function submitListing(event) {
-  event.preventDefault();
-
-  const errorEl = document.getElementById('formError');
-  const submitBtn = document.getElementById('submitBtn');
-  errorEl.style.display = 'none';
-
-  // Validate
-  const address     = document.getElementById('address').value.trim();
-  const price       = parseInt(document.getElementById('price').value);
-  const propType    = document.getElementById('propType').value;
-  const beds        = parseInt(document.getElementById('beds').value);
-  const baths       = parseInt(document.getElementById('baths').value);
-  const description = document.getElementById('description').value.trim();
-  const swapPref    = document.querySelector('input[name="swapPref"]:checked')?.value;
-  const contactName = document.getElementById('contactName').value.trim();
-  const agreeTerms  = document.getElementById('agreeTerms').checked;
-
-  if (!swapPref) {
-    errorEl.textContent = 'Please select a swap preference.';
-    errorEl.style.display = 'block';
-    return;
-  }
-  if (!agreeTerms) {
-    errorEl.textContent = 'Please agree to the terms of use.';
-    errorEl.style.display = 'block';
-    return;
-  }
-
-  const { data: { session } } = await db.auth.getSession();
-  if (!session) {
-    showSignInModal();
-    return;
-  }
-
-  submitBtn.disabled = true;
-  submitBtn.textContent = 'Publishing…';
-
-  try {
-    // 1. Create the listing record first to get an ID for photo paths
-    const listingData = {
-      user_id:       session.user.id,
-      address,
-      price,
-      property_type: propType,
-      beds,
-      baths,
-      garages:       parseInt(document.getElementById('garages').value) || 0,
-      land_size:     parseInt(document.getElementById('landSize').value) || null,
-      description,
-      swap_pref:     swapPref,
-      swap_location: document.getElementById('swapLocation').value.trim() || null,
-      swap_notes:    document.getElementById('swapNotes').value.trim() || null,
-      contact_name:  contactName,
-      contact_email: session.user.email,
-      contact_phone: document.getElementById('contactPhone').value.trim() || null,
-      show_phone:    document.getElementById('showPhone').checked,
-      photos:        [],
-      active:        true,
-    };
-
-    const { data: listing, error: insertError } = await db
-      .from('listings')
-      .insert(listingData)
-      .select()
-      .single();
-
-    if (insertError) throw insertError;
-
-    // 2. Upload photos now that we have a listing ID
-    if (selectedPhotos.length > 0) {
-      const photoUrls = await uploadPhotos(session.user.id, listing.id);
-
-      if (photoUrls.length > 0) {
-        await db
-          .from('listings')
-          .update({ photos: photoUrls })
-          .eq('id', listing.id);
-      }
-    }
-
-    // 3. Done — redirect to the listing
-    showToast('Listing published!');
-    setTimeout(() => {
-      window.location.href = `pages/listing.html?id=${listing.id}`;
-    }, 800);
-
-  } catch (err) {
-    console.error(err);
-    errorEl.textContent = 'Something went wrong. Please try again.';
-    errorEl.style.display = 'block';
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Publish listing';
-  }
-}
-
-// Init
-checkAuthForPost();
-
-// Re-check auth state when user signs in
-db.auth.onAuthStateChange((_event, session) => {
-  if (session) {
-    const gate = document.getElementById('authGate');
-    const form = document.getElementById('listingForm');
-    if (gate) gate.style.display = 'none';
-    if (form) form.style.display = 'flex';
-  }
-});
+  <script src="../js/supabase.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/listing.js"></script>
+</body>
+</html>
