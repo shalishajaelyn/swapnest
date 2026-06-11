@@ -1,1 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conveyancers — Nest X</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
 
+  <nav class="navbar">
+    <a href="../index.html" class="logo">Nest<span>X</span></a>
+    <div class="nav-links">
+      <a href="../browse.html">Browse homes</a>
+      <a href="about.html">About</a>
+      <a href="conveyancers.html" class="active">Conveyancers</a>
+      <a href="#" id="myListingsLink" style="display:none">My listings</a>
+      <span id="userEmail" class="user-email"></span>
+      <button id="authBtn" class="btn btn-outline" onclick="handleAuth()">Sign in</button>
+      <a href="../post.html" class="btn btn-primary">List your home</a>
+    </div>
+    <button class="hamburger" onclick="toggleMenu()">&#9776;</button>
+  </nav>
+
+  <div class="disclaimer-banner">
+    <div class="container">
+      ⚖️ Nest X does not endorse or take responsibility for any conveyancer listed. Listings are for directory purposes only. Always verify credentials independently.
+    </div>
+  </div>
+
+  <div class="page-header">
+    <div class="container">
+      <h1>NZ Conveyancer Directory</h1>
+      <p>Licensed conveyancers experienced in NZ property transactions</p>
+    </div>
+  </div>
+
+  <div class="container conveyancer-layout">
+
+    <div class="conveyancer-intro">
+      <div class="conveyancer-explainer">
+        <h2>Why you need a conveyancer</h2>
+        <p>Every property swap on Nest X must be completed through a licensed NZ conveyancer. They prepare the sale and purchase agreements, conduct title searches, coordinate with banks, and ensure both property transfers settle simultaneously and legally.</p>
+        <p>For a swap sale, we recommend choosing a conveyancer who has experience with <strong>simultaneous settlements</strong> — where two properties transfer ownership on the same day. Not all conveyancers handle these regularly, so it's worth asking upfront.</p>
+        <div class="conveyancer-tip">
+          <strong>💡 Tip:</strong> Both parties in a swap can use different conveyancers — in fact, it's recommended so each party has independent legal representation.
+        </div>
+      </div>
+
+      <div class="conveyancer-cta-box">
+        <h3>Are you a conveyancer?</h3>
+        <p>Get listed in our directory and connect with NZ homeowners looking to swap. Free to list during our launch period.</p>
+        <a href="mailto:hello@nestx.co.nz?subject=Conveyancer directory listing" class="btn btn-primary">Request a listing</a>
+      </div>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="conveyancer-filters">
+      <input type="text" id="convSearch" placeholder="Search by name, region or city…" oninput="filterConveyancers()">
+      <select id="convRegion" onchange="filterConveyancers()">
+        <option value="">All regions</option>
+        <option value="Auckland">Auckland</option>
+        <option value="Wellington">Wellington</option>
+        <option value="Canterbury">Canterbury</option>
+        <option value="Waikato">Waikato</option>
+        <option value="Bay of Plenty">Bay of Plenty</option>
+        <option value="Otago">Otago</option>
+        <option value="Manawatu">Manawatu-Whanganui</option>
+        <option value="Hawke's Bay">Hawke's Bay</option>
+        <option value="Northland">Northland</option>
+        <option value="Nelson">Nelson/Marlborough</option>
+      </select>
+    </div>
+
+    <!-- DIRECTORY -->
+    <div class="conveyancer-grid" id="conveyancerGrid">
+
+      <div class="conveyancer-empty-state" style="grid-column:1/-1;text-align:center;padding:3rem 2rem;background:var(--surface);border-radius:var(--radius-lg);border:1px solid var(--border);">
+        <div style="font-size:48px;margin-bottom:1rem">⚖️</div>
+        <h3 style="font-size:1.2rem;font-weight:600;margin-bottom:0.75rem;">Our directory is growing</h3>
+        <p style="font-size:15px;color:var(--text-mid);margin-bottom:1rem;max-width:480px;margin-left:auto;margin-right:auto;line-height:1.7;">We are currently onboarding licensed NZ conveyancers with experience in simultaneous settlements. Check back soon — or contact us directly for a recommendation.</p>
+        <a href="mailto:hello@nestx.co.nz?subject=Conveyancer recommendation" class="btn btn-primary" style="margin-bottom:1.5rem;">Request a recommendation →</a>
+        <div style="padding-top:1.5rem;border-top:1px solid var(--border);margin-top:0.5rem;">
+          <p style="font-size:13px;color:var(--text-muted);margin-bottom:0.5rem;font-weight:500;">Are you a licensed NZ conveyancer?</p>
+          <p style="font-size:13px;color:var(--text-muted);margin-bottom:1rem;">Join our directory and connect with homeowners looking to swap or sell privately. First month free.</p>
+          <a href="register-conveyancer.html" class="btn btn-outline">Apply to join the directory →</a>
+        </div>
+      </div>
+
+    </div>
+
+      <div class="conveyancer-card" data-region="Auckland">
+        <div class="conveyancer-header">
+    </div>
+
+    <div class="conveyancer-disclaimer">
+      <p>⚖️ <strong>Important:</strong> Nest X does not endorse, recommend or take responsibility for any conveyancer listed in this directory. This directory is provided as a convenience only. Always verify a conveyancer's credentials independently via the <a href="https://www.nzls.org.nz" target="_blank">NZ Law Society</a> before engaging their services. Conveyancer details may change — always confirm contact information directly.</p>
+    </div>
+
+  </div>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <span class="logo">Nest<span>X</span></span>
+        <p>New Zealand's verified private home swap marketplace.</p>
+      </div>
+      <div class="footer-links">
+        <a href="../browse.html">Browse</a>
+        <a href="../post.html">List a home</a>
+        <a href="about.html">About</a>
+        <a href="conveyancers.html">Conveyancers</a>
+        <a href="terms.html">Terms of use</a>
+        <a href="privacy.html">Privacy policy</a>
+        <a href="mailto:hello@nestx.co.nz">Contact</a>
+      </div>
+      <p class="footer-disclaimer">⚖️ Nest X is a private listing platform only. We are not a licensed real estate agent and do not provide property advice.</p>
+    </div>
+  </footer>
+
+  <script src="../js/supabase.js"></script>
+  <script src="../js/auth.js"></script>
+  <script>
+    function filterConveyancers() {
+      const search = document.getElementById('convSearch').value.toLowerCase();
+      const region = document.getElementById('convRegion').value;
+      document.querySelectorAll('.conveyancer-card').forEach(card => {
+        const text = card.textContent.toLowerCase();
+        const cardRegion = card.dataset.region || '';
+        const matchSearch = !search || text.includes(search);
+        const matchRegion = !region || cardRegion.includes(region);
+        card.style.display = matchSearch && matchRegion ? '' : 'none';
+      });
+    }
+  </script>
+</body>
+</html>
