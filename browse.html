@@ -43,11 +43,6 @@
       <h3>Filter</h3>
 
       <div class="filter-group">
-        <label>Search</label>
-        <input type="text" id="searchInput" placeholder="Address, suburb, city…" oninput="applyFilters()">
-      </div>
-
-      <div class="filter-group">
         <label>Island</label>
         <select id="filterIsland" onchange="updateRegions()">
           <option value="">All of New Zealand</option>
@@ -65,8 +60,15 @@
 
       <div class="filter-group">
         <label>City / District</label>
-        <select id="filterCity" onchange="applyFilters()">
+        <select id="filterCity" onchange="updateSuburbs()">
           <option value="">All cities</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Suburb</label>
+        <select id="filterSuburb" onchange="applyFilters()">
+          <option value="">All suburbs</option>
         </select>
       </div>
 
