@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nest X — Admin</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    .admin-layout { padding: 2rem 0 4rem; }
+    .admin-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; }
+    .admin-header h1 { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.03em; }
+    .admin-tabs { display: flex; gap: 0; margin-bottom: 2rem; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; width: fit-content; }
+    .admin-tab { padding: 8px 18px; font-size: 14px; font-weight: 500; cursor: pointer; background: transparent; border: none; color: var(--text-mid); font-family: inherit; transition: all 0.15s; position: relative; }
+    .admin-tab.active { background: var(--green); color: white; }
+    .admin-tab:hover:not(.active) { background: var(--surface); }
+    .admin-badge { background: #dc2626; color: white; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 10px; margin-left: 6px; vertical-align: middle; }
+    .admin-section { display: none; }
+    .admin-section.active { display: block; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .stat-card { background: var(--surface); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; }
+    .stat-label { font-size: 12px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+    .stat-value { font-size: 2rem; font-weight: 700; color: var(--text); letter-spacing: -0.03em; }
+    .stat-sub { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+    .admin-card { background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 1rem; }
+    .admin-card-header { display: flex; align-items: flex-start; justify-content: space-between; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); }
+    .admin-card-body { padding: 1.25rem 1.5rem; }
+    .admin-card-title { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
+    .admin-card-sub { font-size: 13px; color: var(--text-muted); }
+    .admin-card-actions { display: flex; gap: 8px; flex-shrink: 0; margin-left: 1rem; }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px; }
+    .detail-item { font-size: 13px; }
+    .detail-item span { color: var(--text-muted); display: block; font-size: 12px; margin-bottom: 2px; }
+    .status-badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; }
+    .status-pending { background: #fef3c7; color: #92400e; }
+    .status-active { background: var(--green-light); color: var(--green-dark); }
+    .status-rejected { background: #fee2e2; color: #991b1b; }
+    .property-photo { width: 80px; height: 60px; border-radius: 6px; object-fit: cover; background: var(--surface-2); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 24px; overflow: hidden; }
+    .property-photo img { width: 100%; height: 100%; object-fit: cover; }
+    .admin-empty { text-align: center; padding: 3rem; color: var(--text-muted); background: var(--surface); border-radius: var(--radius-lg); }
+    .admin-empty p { margin-bottom: 0.5rem; }
+    .rv-check { background: #fef3c7; border: 1px solid #fde68a; border-radius: var(--radius); padding: 10px 14px; font-size: 13px; color: #92400e; margin-bottom: 1rem; }
+    .rv-check a { color: #92400e; font-weight: 600; }
+    .user-row { display: flex; align-items: center; gap: 1rem; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .user-row:last-child { border-bottom: none; }
+    .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--green-light); color: var(--green-dark); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+    .user-info { flex: 1; }
+    .user-name { font-size: 14px; font-weight: 500; }
+    .user-email { font-size: 13px; color: var(--text-muted); }
+    .user-date { font-size: 12px; color: var(--text-muted); }
+    .rejection-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: center; justify-content: center; padding: 1rem; }
+    .rejection-modal.open { display: flex; }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="../index.html" class="logo">Nest<span>X</span> <span style="font-size:12px;background:#dc2626;color:white;padding:2px 8px;border-radius:20px;margin-left:6px;font-weight:600;">ADMIN</span></a>
+    <div class="nav-links">
+      <a href="../browse.html">Browse</a>
+      <span id="userEmail" class="user-email"></span>
+      <button id="authBtn" class="btn btn-outline" onclick="handleAuth()">Sign out</button>
+    </div>
+    <button class="hamburger" onclick="toggleMenu()">&#9776;</button>
+  </nav>
+
+  <div class="disclaimer-banner">
+    <div class="container">
+      🔐 Admin panel — restricted access only
+    </div>
+  </div>
+
+  <div class="container admin-layout" id="adminContent">
+    <div class="loading-state">Verifying admin access…</div>
+  </div>
+
+  <!-- REJECTION MODAL -->
+  <div class="rejection-modal" id="rejectionModal">
+    <div class="modal" style="max-width:460px">
+      <div class="modal-header">
+        <h2>Reason for rejection</h2>
+        <button class="modal-close" onclick="closeRejectionModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <label>Message to applicant</label>
+          <textarea id="rejectionReason" rows="4" placeholder="e.g. We could not verify your RV against council records. Please resubmit with your rates notice attached."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeRejectionModal()">Cancel</button>
+        <button class="btn btn-danger" onclick="confirmReject()">Reject listing</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <span class="logo">Nest<span>X</span></span>
+      </div>
+      <p class="footer-disclaimer">Admin panel — Nest X internal use only.</p>
+    </div>
+  </footer>
+
+  <script src="../js/supabase.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/admin.js"></script>
+</body>
+</html>
