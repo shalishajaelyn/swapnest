@@ -3,14 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Listing — SwapNest</title>
+  <title>Listing — NestX</title>
   <link rel="stylesheet" href="../css/style.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
   <nav class="navbar">
-    <a href="../index.html" class="logo">swap<span>nest</span></a>
+    <a href="../index.html" class="logo">NestX</a>
     <div class="nav-links">
       <a href="../browse.html">Browse homes</a>
       <a href="about.html">About</a>
@@ -23,6 +22,12 @@
     </div>
     <button class="hamburger" onclick="toggleMenu()">&#9776;</button>
   </nav>
+
+  <div class="disclaimer-banner">
+    <div class="container">
+      ⚖️ NestX is a private listing platform only. We are <strong>not a licensed real estate agent</strong> and do not provide property advice.
+    </div>
+  </div>
 
   <div class="container listing-detail-layout" id="listingDetail">
     <div class="loading-state">Loading listing…</div>
@@ -37,7 +42,6 @@
       </div>
       <div class="modal-body">
         <div class="offer-target-info" id="offerTargetInfo"></div>
-
         <div class="form-row">
           <label>Your property address <span class="req">*</span></label>
           <input type="text" id="o_address" placeholder="e.g. 22 Hill Road, Newtown, Wellington" required>
@@ -55,7 +59,7 @@
         <div id="diffExplainer" class="diff-explainer"></div>
         <div class="form-row">
           <label>Message to seller <span class="req">*</span></label>
-          <textarea id="o_msg" rows="4" placeholder="Introduce your home and why you think it's a great swap. Include details about bedrooms, location, condition, what you love about it…"></textarea>
+          <textarea id="o_msg" rows="4" placeholder="Introduce your home and why you think it's a great swap…"></textarea>
         </div>
         <div class="form-row">
           <label>Your contact email <span class="req">*</span></label>
@@ -76,20 +80,24 @@
   <footer class="footer">
     <div class="container footer-inner">
       <div class="footer-brand">
-        <span class="logo">swap<span>nest</span></span>
-        <p>New Zealand's private home swap marketplace.</p>
+        <span class="logo">NestX</span>
+        <p>New Zealand's verified private home swap marketplace.</p>
       </div>
       <div class="footer-links">
         <a href="../browse.html">Browse</a>
-        <a href="../post.html">List a home</a>
+        <a href="register-lister.html">List a home</a>
+        <a href="about.html">About</a>
+        <a href="conveyancers.html">Conveyancers</a>
+        <a href="pricing.html">Pricing</a>
         <a href="terms.html">Terms of use</a>
         <a href="privacy.html">Privacy policy</a>
-        <a href="mailto:hello@swapnest.co.nz">Contact</a>
+        <a href="mailto:hello@nestx.co.nz">Contact</a>
       </div>
-      <p class="footer-disclaimer">SwapNest connects buyers and sellers. We are not a licensed real estate agent and do not provide property advice.</p>
+      <p class="footer-disclaimer">⚖️ NestX is a private listing platform only. We are not a licensed real estate agent and do not provide property advice.</p>
     </div>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../js/supabase.js"></script>
   <script src="../js/auth.js"></script>
   <script src="../js/listing.js"></script>
