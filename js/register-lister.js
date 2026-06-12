@@ -241,7 +241,32 @@ async function processPayment() {
       status: 'pending'
     });
 
-    // 7. Show success
+    // 7. Send admin notification email
+    try {
+      await fetch('/api/send-notification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'new_listing',
+          data: {
+            address:       document.getElementById('propAddress').value.trim(),
+            price:         parseInt(document.getElementById('propPrice').value),
+            rv:            parseInt(document.getElementById('propRV').value),
+            property_type: document.getElementById('propType').value,
+            beds:          parseInt(document.getElementById('propBeds').value),
+            baths:         parseInt(document.getElementById('propBaths').value),
+            swap_pref:     document.querySelector('input[name="swapPref"]:checked').value,
+            contact_name:  document.getElementById('firstName').value.trim(),
+            contact_email: document.getElementById('regEmail').value.trim()
+          }
+        })
+      });
+    } catch (emailErr) {
+      // Don't fail registration if email fails
+      console.warn('Admin notification failed:', emailErr);
+    }
+
+    // 8. Show success
     goToStep(4);
 
   } catch (err) {
