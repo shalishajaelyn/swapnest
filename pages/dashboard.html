@@ -3,14 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My listings — SwapNest</title>
+  <title>My listings — NestX</title>
   <link rel="stylesheet" href="../css/style.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
   <nav class="navbar">
-    <a href="../index.html" class="logo">swap<span>nest</span></a>
+    <a href="../index.html" class="logo">NestX</a>
     <div class="nav-links">
       <a href="../browse.html">Browse homes</a>
       <a href="about.html">About</a>
@@ -23,6 +22,12 @@
     </div>
     <button class="hamburger" onclick="toggleMenu()">&#9776;</button>
   </nav>
+
+  <div class="disclaimer-banner">
+    <div class="container">
+      ⚖️ NestX is a private listing platform only. We are <strong>not a licensed real estate agent</strong> and do not provide property advice.
+    </div>
+  </div>
 
   <div class="page-header">
     <div class="container">
@@ -38,18 +43,24 @@
   <footer class="footer">
     <div class="container footer-inner">
       <div class="footer-brand">
-        <span class="logo">swap<span>nest</span></span>
+        <span class="logo">NestX</span>
+        <p>New Zealand's verified private home swap marketplace.</p>
       </div>
       <div class="footer-links">
         <a href="../browse.html">Browse</a>
-        <a href="../post.html">List a home</a>
+        <a href="register-lister.html">List a home</a>
+        <a href="about.html">About</a>
+        <a href="conveyancers.html">Conveyancers</a>
+        <a href="pricing.html">Pricing</a>
         <a href="terms.html">Terms of use</a>
         <a href="privacy.html">Privacy policy</a>
+        <a href="mailto:hello@nestx.co.nz">Contact</a>
       </div>
-      <p class="footer-disclaimer">SwapNest connects buyers and sellers. We are not a licensed real estate agent.</p>
+      <p class="footer-disclaimer">⚖️ NestX is a private listing platform only. We are not a licensed real estate agent and do not provide property advice.</p>
     </div>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../js/supabase.js"></script>
   <script src="../js/auth.js"></script>
   <script src="../js/dashboard.js"></script>
