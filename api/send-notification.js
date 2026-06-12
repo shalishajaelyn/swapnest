@@ -162,6 +162,34 @@ module.exports = async (req, res) => {
           </div>
         </div>
       `;
+    } else if (type === 'listing_sold') {
+      subject = `🎉 Congratulations on your sale — NestX`;
+      html = `
+        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+          <div style="background:#0F6E56;padding:20px 24px;border-radius:10px 10px 0 0;">
+            <h1 style="color:white;margin:0;font-size:20px;font-weight:700;">NestX</h1>
+            <p style="color:#9FE1CB;margin:4px 0 0;font-size:14px;">Congratulations on your sale!</p>
+          </div>
+          <div style="background:#f5f4f0;padding:24px;border-radius:0 0 10px 10px;">
+            <h2 style="font-size:18px;margin:0 0 12px;color:#1a1a18;">Well done, ${data.contact_name}!</h2>
+            <p style="font-size:15px;color:#4a4a47;margin-bottom:16px;">
+              Your property at <strong>${data.address}</strong> has been marked as sold. Your listing has been removed and your subscription cancelled.
+            </p>
+            <div style="background:#E1F5EE;border-radius:8px;padding:16px 20px;margin-bottom:20px;">
+              <p style="margin:0;font-size:15px;color:#085041;font-weight:600;">
+                💰 Zero commission means every dollar of your profit stays with you.
+              </p>
+            </div>
+            <p style="font-size:14px;color:#4a4a47;">
+              Thank you for using NestX. We hope it made your property journey easier.
+              If you list another property in the future, we'd love to have you back.
+            </p>
+            <p style="margin-top:20px;font-size:12px;color:#767672;">
+              Questions? Contact us at <a href="mailto:hello@nestx.co.nz" style="color:#0F6E56;">hello@nestx.co.nz</a>
+            </p>
+          </div>
+        </div>
+      `;
     } else if (type === 'listing_rejected') {
       subject = `Your NestX listing could not be verified — ${data.address}`;
       html = `
