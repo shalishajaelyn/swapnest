@@ -28,7 +28,7 @@ module.exports = async (req, res) => {
       html = `
         <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;padding:20px;">
           <div style="background:#0F6E56;padding:20px 24px;border-radius:10px 10px 0 0;">
-            <h1 style="color:white;margin:0;font-size:20px;font-weight:700;">Nest X Admin</h1>
+            <h1 style="color:white;margin:0;font-size:20px;font-weight:700;">NestX Admin</h1>
             <p style="color:#9FE1CB;margin:4px 0 0;font-size:14px;">New listing pending verification</p>
           </div>
           <div style="background:#f5f4f0;padding:24px;border-radius:0 0 10px 10px;">
@@ -74,7 +74,7 @@ module.exports = async (req, res) => {
             </a>
 
             <p style="margin-top:20px;font-size:12px;color:#767672;">
-              This is an automated notification from Nest X. Do not reply to this email.
+              This is an automated notification from NestX. Do not reply to this email.
             </p>
           </div>
         </div>
@@ -84,7 +84,7 @@ module.exports = async (req, res) => {
       html = `
         <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;padding:20px;">
           <div style="background:#0F6E56;padding:20px 24px;border-radius:10px 10px 0 0;">
-            <h1 style="color:white;margin:0;font-size:20px;font-weight:700;">Nest X Admin</h1>
+            <h1 style="color:white;margin:0;font-size:20px;font-weight:700;">NestX Admin</h1>
             <p style="color:#9FE1CB;margin:4px 0 0;font-size:14px;">New conveyancer application</p>
           </div>
           <div style="background:#f5f4f0;padding:24px;border-radius:0 0 10px 10px;">
@@ -131,22 +131,22 @@ module.exports = async (req, res) => {
             </a>
 
             <p style="margin-top:20px;font-size:12px;color:#767672;">
-              This is an automated notification from Nest X. Do not reply to this email.
+              This is an automated notification from NestX. Do not reply to this email.
             </p>
           </div>
         </div>
       `;
     } else if (type === 'listing_approved') {
-      subject = `✅ Your Nest X listing is now live — ${data.address}`;
+      subject = `✅ Your NestX listing is now live — ${data.address}`;
       html = `
         <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;padding:20px;">
           <div style="background:#0F6E56;padding:20px 24px;border-radius:10px 10px 0 0;">
-            <h1 style="color:white;margin:0;font-size:20px;font-weight:700;">Nest X</h1>
+            <h1 style="color:white;margin:0;font-size:20px;font-weight:700;">NestX</h1>
             <p style="color:#9FE1CB;margin:4px 0 0;font-size:14px;">Your listing is live!</p>
           </div>
           <div style="background:#f5f4f0;padding:24px;border-radius:0 0 10px 10px;">
             <h2 style="font-size:18px;margin:0 0 12px;color:#1a1a18;">Great news, ${data.contact_name}!</h2>
-            <p style="font-size:15px;color:#4a4a47;margin-bottom:16px;">Your property at <strong>${data.address}</strong> has been verified and is now live on Nest X. Other homeowners can now find your listing and send you swap offers.</p>
+            <p style="font-size:15px;color:#4a4a47;margin-bottom:16px;">Your property at <strong>${data.address}</strong> has been verified and is now live on NestX. Other homeowners can now find your listing and send you swap offers.</p>
 
             <div style="background:#E1F5EE;border-radius:8px;padding:14px 16px;margin-bottom:20px;">
               <p style="margin:0;font-size:14px;color:#085041;font-weight:500;">💰 Remember — when you sell or swap, zero commission means every dollar of profit stays with you.</p>
@@ -163,11 +163,11 @@ module.exports = async (req, res) => {
         </div>
       `;
     } else if (type === 'listing_rejected') {
-      subject = `Your Nest X listing could not be verified — ${data.address}`;
+      subject = `Your NestX listing could not be verified — ${data.address}`;
       html = `
         <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;padding:20px;">
           <div style="background:#1a1a18;padding:20px 24px;border-radius:10px 10px 0 0;">
-            <h1 style="color:white;margin:0;font-size:20px;font-weight:700;">Nest X</h1>
+            <h1 style="color:white;margin:0;font-size:20px;font-weight:700;">NestX</h1>
           </div>
           <div style="background:#f5f4f0;padding:24px;border-radius:0 0 10px 10px;">
             <h2 style="font-size:18px;margin:0 0 12px;color:#1a1a18;">Hi ${data.contact_name},</h2>
@@ -189,7 +189,7 @@ module.exports = async (req, res) => {
       : data.contact_email || data.email;
 
     const { data: emailData, error } = await resend.emails.send({
-      from: `Nest X <${FROM_EMAIL}>`,
+      from: `NestX <${FROM_EMAIL}>`,
       to: toEmail,
       subject,
       html
