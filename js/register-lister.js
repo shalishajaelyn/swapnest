@@ -10,6 +10,143 @@ const elements = stripe.elements();
 let cardElement = null;
 let currentFeeNZD = 0;
 let currentStep = 1;
+let selectedPhotos = [];
+let originalDescription = '';
+
+// ── PHOTO UPLOAD ──
+function handlePhotoSelect(event) {
+  const files = Array.from(event.target.files);
+  const MAX_PHOTOS = 10;
+  const MAX_SIZE = 5 * 1024 * 1024;
+
+  files.forEach(file => {
+    if (selectedPhotos.length >= MAX_PHOTOS) {
+      showToast(`Maximum ${MAX_PHOTOS} photos allowed`);
+      return;
+    }
+    if (file.size > MAX_SIZE) {
+      showToast(`${file.name} is over 5MB — skipped`);
+      return;
+    }
+    selectedPhotos.push(file);
+  });
+
+  renderPhotoPreviews();
+  event.target.value = '';
+}
+
+function renderPhotoPreviews() {
+  const prompt = document.getElementById('photoUploadPrompt');
+  const grid = document.getElementById('photoPreviewGrid');
+  const count = document.getElementById('photoCount');
+
+  if (selectedPhotos.length === 0) {
+    prompt.style.display = 'block';
+    grid.style.display = 'none';
+    if (count) count.style.display = 'none';
+    return;
+  }
+
+  prompt.style.display = 'none';
+  grid.style.display = 'grid';
+  if (count) {
+    count.style.display = 'block';
+    count.textContent = `${selectedPhotos.length} of 10 photos selected. First photo is the cover image.`;
+  }
+
+  grid.innerHTML = selectedPhotos.map((file, i) => {
+    const url = URL.createObjectURL(file);
+    return `
+      <div style="position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;">
+        <img src="${url}" alt="Photo ${i+1}" style="width:100%;height:100%;object-fit:cover;">
+        <button type="button" onclick="removePhoto(${i})" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,0.6);color:white;border:none;border-radius:50%;width:22px;height:22px;font-size:12px;cursor:pointer;">✕</button>
+        ${i === 0 ? '<div style="position:absolute;bottom:4px;left:4px;background:#0F6E56;color:white;font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;">Cover</div>' : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function removePhoto(index) {
+  selectedPhotos.splice(index, 1);
+  renderPhotoPreviews();
+}
+
+// ── AI DESCRIPTION ENHANCER ──
+async function enhanceDescription() {
+  const desc = document.getElementById('propDesc').value.trim();
+  const tone = document.querySelector('input[name="aiTone"]:checked')?.value || 'professional';
+  const btn = document.getElementById('aiEnhanceBtn');
+  const output = document.getElementById('aiOutput');
+  const outputText = document.getElementById('aiOutputText');
+  const loadingText = document.getElementById('aiLoadingText');
+
+  if (!desc || desc.length < 20) {
+    showToast('Please write at least a basic description first');
+    return;
+  }
+
+  originalDescription = desc;
+  btn.disabled = true;
+  btn.textContent = '✨ Enhancing…';
+  output.style.display = 'block';
+  outputText.style.display = 'none';
+  loadingText.style.display = 'block';
+
+  const toneInstructions = {
+    professional: 'formal, factual and straightforward. Use clear, precise language.',
+    warm: 'warm, friendly and lifestyle-focused. Emphasise comfort, community and liveability.',
+    bold: 'bold, exciting and energetic. Use dynamic language that sells the dream.',
+    minimal: 'clean, concise and minimal. Short sentences, no fluff, just the key facts.',
+    premium: 'premium, aspirational and luxurious. Elevated language that conveys exclusivity and quality.',
+    family: 'family-friendly, highlighting space, school zones, safety, community and outdoor living.',
+    investment: 'investment-focused, emphasising rental yield potential, capital growth, location value and market opportunity.'
+  };
+
+  const prompt = `You are a NZ property copywriter. Rewrite the following property description in a ${toneInstructions[tone]} tone. Keep all factual details accurate. Write in 2-4 paragraphs. Do not add information that wasn't in the original. Output only the rewritten description, nothing else.\n\nOriginal description:\n${desc}`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await response.json();
+    const enhanced = data.content?.[0]?.text || '';
+    if (!enhanced) throw new Error('No response');
+
+    loadingText.style.display = 'none';
+    outputText.style.display = 'block';
+    outputText.textContent = enhanced;
+
+  } catch (err) {
+    loadingText.style.display = 'none';
+    outputText.style.display = 'block';
+    outputText.textContent = 'AI enhancement failed — please try again.';
+    outputText.style.color = '#dc2626';
+  }
+
+  btn.disabled = false;
+  btn.textContent = '✨ Enhance description';
+}
+
+function acceptAIDescription() {
+  const enhanced = document.getElementById('aiOutputText').textContent;
+  if (enhanced) {
+    document.getElementById('propDesc').value = enhanced;
+    document.getElementById('aiOutput').style.display = 'none';
+    showToast('✅ AI description applied!');
+  }
+}
+
+function discardAIDescription() {
+  document.getElementById('aiOutput').style.display = 'none';
+  showToast('Original description kept');
+}
 
 // ── STRIPE CARD ELEMENT ──
 function mountCardElement() {
@@ -73,12 +210,21 @@ async function proceedToStep2() {
   const errEl = document.getElementById('step1Error');
   errEl.style.display = 'none';
 
+  const username  = document.getElementById('username').value.trim();
   const firstName = document.getElementById('firstName').value.trim();
   const lastName  = document.getElementById('lastName').value.trim();
   const email     = document.getElementById('regEmail').value.trim();
   const password  = document.getElementById('regPassword').value;
   const idFile    = document.getElementById('idFile').files[0];
 
+  if (!username) {
+    errEl.textContent = 'Please choose a username.';
+    errEl.style.display = 'block'; return;
+  }
+  if (username.length < 3) {
+    errEl.textContent = 'Username must be at least 3 characters.';
+    errEl.style.display = 'block'; return;
+  }
   if (!firstName || !lastName || !email || !password) {
     errEl.textContent = 'Please fill in all required fields.';
     errEl.style.display = 'block'; return;
@@ -150,11 +296,12 @@ async function processPayment() {
       password: document.getElementById('regPassword').value,
       options: {
         data: {
-          first_name: document.getElementById('firstName').value.trim(),
-          last_name: document.getElementById('lastName').value.trim(),
+          username:     document.getElementById('username').value.trim(),
+          first_name:   document.getElementById('firstName').value.trim(),
+          last_name:    document.getElementById('lastName').value.trim(),
           last_initial: document.getElementById('lastName').value.trim().charAt(0).toUpperCase(),
-          phone: document.getElementById('regPhone').value.trim(),
-          user_type: 'lister'
+          phone:        document.getElementById('regPhone').value.trim(),
+          user_type:    'lister'
         }
       }
     });
@@ -208,6 +355,7 @@ async function processPayment() {
       contact_name:  document.getElementById('firstName').value.trim(),
       contact_email: document.getElementById('regEmail').value.trim(),
       contact_phone: document.getElementById('regPhone').value.trim() || null,
+      username:      document.getElementById('username').value.trim(),
       photos:        [],
       active:        false, // pending verification
       status:        'pending_verification',
@@ -218,7 +366,29 @@ async function processPayment() {
 
     if (listingError) throw new Error(listingError.message);
 
-    // 5. Upload ID documents
+    // 5. Upload property photos
+    if (selectedPhotos.length > 0) {
+      const photoUrls = [];
+      for (let i = 0; i < selectedPhotos.length; i++) {
+        const file = selectedPhotos[i];
+        const ext = file.name.split('.').pop();
+        const path = `${userId}/${listing.id}/${i}.${ext}`;
+        const { error: uploadError } = await db.storage
+          .from('listing-photos')
+          .upload(path, file, { upsert: true });
+        if (!uploadError) {
+          const { data: { publicUrl } } = db.storage
+            .from('listing-photos')
+            .getPublicUrl(path);
+          photoUrls.push(publicUrl);
+        }
+      }
+      if (photoUrls.length > 0) {
+        await db.from('listings').update({ photos: photoUrls }).eq('id', listing.id);
+      }
+    }
+
+    // 6. Upload ID documents
     const idFile = document.getElementById('idFile').files[0];
     if (idFile) {
       await db.storage.from('verifications').upload(
