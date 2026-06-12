@@ -86,10 +86,29 @@ function showSignInModal() {
         <div id="signInView">
           <div class="form-row"><label>Email address</label><input type="email" id="siEmail" placeholder="you@example.com" autofocus></div>
           <div class="form-row"><label>Password</label><input type="password" id="siPassword" placeholder="At least 8 characters" onkeydown="if(event.key==='Enter')doSignIn()"></div>
-          <div class="modal-footer" style="padding:0;border:none;margin-top:1.5rem">
+          <div style="text-align:right;margin-top:-6px;margin-bottom:12px;">
+            <button onclick="showForgotView()" style="background:none;border:none;font-size:13px;color:var(--green);cursor:pointer;text-decoration:underline;font-family:inherit;">Forgot password?</button>
+          </div>
+          <div class="modal-footer" style="padding:0;border:none;margin-top:1rem">
             <button class="btn btn-outline" onclick="showSignUpView()">Create account</button>
             <button class="btn btn-primary" onclick="doSignIn()">Sign in</button>
           </div>
+        </div>
+
+        <div id="forgotView" style="display:none">
+          <p style="font-size:14px;color:var(--text-mid);margin-bottom:1.25rem;">Enter your email address and we'll send you a link to reset your password.</p>
+          <div class="form-row"><label>Email address</label><input type="email" id="forgotEmail" placeholder="you@example.com" onkeydown="if(event.key==='Enter')doForgotPassword()"></div>
+          <div class="modal-footer" style="padding:0;border:none;margin-top:1.5rem">
+            <button class="btn btn-outline" onclick="showSignInView()">← Back to sign in</button>
+            <button class="btn btn-primary" onclick="doForgotPassword()">Send reset link</button>
+          </div>
+        </div>
+
+        <div id="forgotSentView" style="display:none;text-align:center;padding:1rem 0">
+          <div style="font-size:36px;margin-bottom:1rem">📬</div>
+          <h3 style="margin-bottom:0.5rem">Check your email</h3>
+          <p style="color:var(--text-muted);font-size:14px;margin-bottom:1rem">We've sent a password reset link to your email. Click it to set a new password.</p>
+          <p style="color:var(--text-muted);font-size:13px;">Didn't receive it? Check your spam folder or <button onclick="showForgotView()" style="background:none;border:none;color:var(--green);cursor:pointer;font-size:13px;text-decoration:underline;font-family:inherit;">try again</button>.</p>
         </div>
 
         <div id="signUpView" style="display:none">
@@ -198,6 +217,37 @@ function showSignInModal() {
   modal.querySelector('#policeCheck').addEventListener('change', function() {
     document.getElementById('policeUploadSection').style.display = this.checked ? 'block' : 'none';
   });
+}
+
+function showForgotView() {
+  document.getElementById('signInView').style.display = 'none';
+  document.getElementById('signUpView').style.display = 'none';
+  document.getElementById('forgotView').style.display = 'block';
+  document.getElementById('signInError').style.display = 'none';
+}
+
+async function doForgotPassword() {
+  const email = document.getElementById('forgotEmail').value.trim();
+  const errEl = document.getElementById('signInError');
+
+  if (!email) {
+    errEl.textContent = 'Please enter your email address.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const redirectTo = window.location.origin + '/pages/reset-password.html';
+
+  const { error } = await db.auth.resetPasswordForEmail(email, { redirectTo });
+
+  if (error) {
+    errEl.textContent = error.message;
+    errEl.style.display = 'block';
+    return;
+  }
+
+  document.getElementById('forgotView').style.display = 'none';
+  document.getElementById('forgotSentView').style.display = 'block';
 }
 
 function showSignUpView() {
