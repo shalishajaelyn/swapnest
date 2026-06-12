@@ -112,9 +112,9 @@ function renderListing(l) {
           Make a swap offer
         </button>
         <div class="sidebar-contact">
-          <div class="contact-name">${l.contact_name}</div>
-          ${phoneHtml}
-          <p style="font-size:12px;color:var(--text-muted);margin-top:6px">Send a swap offer to contact this seller</p>
+          <div class="contact-name">${l.username || l.contact_name}</div>
+          <p style="font-size:12px;color:var(--text-muted);margin-top:6px">Send a swap offer to connect with this seller</p>
+          <p style="font-size:11px;color:var(--text-muted);margin-top:4px">Contact details shared only when both parties are open to chat</p>
         </div>
       </div>
 
@@ -215,17 +215,23 @@ async function submitOffer() {
 
   const { data: { session } } = await db.auth.getSession();
 
+  // Get offerer's first name from their profile if signed in
+  const offererFirstName = session?.user?.user_metadata?.first_name || null;
+  const offererUsername = session?.user?.user_metadata?.username || null;
+
   const offer = {
-    listing_id:    currentListing.id,
-    listing_owner: currentListing.user_id,
-    offerer_id:    session?.user?.id || null,
-    offerer_email: email,
-    offerer_phone: phone || null,
-    offer_address: address,
-    offer_value:   value,
-    cash_diff:     currentListing.price - value,
-    message:       msg,
-    status:        'pending',
+    listing_id:         currentListing.id,
+    listing_owner:      currentListing.user_id,
+    offerer_id:         session?.user?.id || null,
+    offerer_email:      email,
+    offerer_phone:      phone || null,
+    offerer_first_name: offererFirstName,
+    offerer_username:   offererUsername,
+    offer_address:      address,
+    offer_value:        value,
+    cash_diff:          currentListing.price - value,
+    message:            msg,
+    status:             'pending',
   };
 
   const { error } = await db.from('offers').insert(offer);
