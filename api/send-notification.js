@@ -162,6 +162,40 @@ module.exports = async (req, res) => {
           </div>
         </div>
       `;
+    } else if (type === 'open_to_chat') {
+      // Email to the offerer — seller is open to chat
+      subject = `💬 Great news — they're open to chat about your swap offer`;
+      html = `
+        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+          <div style="background:#0F6E56;padding:20px 24px;border-radius:10px 10px 0 0;">
+            <h1 style="color:white;margin:0;font-size:20px;font-weight:700;">NestX</h1>
+            <p style="color:#9FE1CB;margin:4px 0 0;font-size:14px;">Someone is open to chat!</p>
+          </div>
+          <div style="background:#f5f4f0;padding:24px;border-radius:0 0 10px 10px;">
+            <h2 style="font-size:18px;margin:0 0 12px;color:#1a1a18;">Hi ${data.offerer_first_name}!</h2>
+            <p style="font-size:15px;color:#4a4a47;margin-bottom:16px;">
+              The owner of <strong>${data.listing_address}</strong> is open to chat about your swap offer for <strong>${data.offer_address}</strong>.
+            </p>
+
+            <div style="background:#E1F5EE;border-radius:8px;padding:16px 20px;margin-bottom:20px;">
+              <div style="font-size:13px;font-weight:600;color:#085041;margin-bottom:10px;">✅ Their contact details</div>
+              <table style="width:100%;font-size:14px;">
+                <tr><td style="color:#767672;padding:4px 0;width:40%">First name</td><td style="font-weight:500;">${data.seller_first_name}</td></tr>
+                <tr><td style="color:#767672;padding:4px 0;">Email</td><td style="font-weight:500;">${data.seller_email}</td></tr>
+                ${data.seller_phone ? `<tr><td style="color:#767672;padding:4px 0;">Phone</td><td style="font-weight:500;">${data.seller_phone}</td></tr>` : ''}
+              </table>
+            </div>
+
+            <p style="font-size:14px;color:#4a4a47;margin-bottom:16px;">Being open to chat is not a binding commitment — it simply means both parties are interested in exploring the swap further. We recommend getting independent valuations before proceeding.</p>
+
+            <div style="background:#fef3c7;border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:13px;color:#92400e;">
+              ⚖️ When you're ready to proceed, engage a licensed NZ conveyancer. Visit our <a href="https://nestx.co.nz/pages/conveyancers.html" style="color:#92400e;">conveyancer directory</a> for recommendations.
+            </div>
+
+            <p style="font-size:12px;color:#767672;">Questions? Contact us at <a href="mailto:hello@nestx.co.nz" style="color:#0F6E56;">hello@nestx.co.nz</a></p>
+          </div>
+        </div>
+      `;
     } else if (type === 'listing_sold') {
       subject = `🎉 Congratulations on your sale — NestX`;
       html = `
