@@ -304,22 +304,25 @@ function renderWaitlistSection(entries) {
 
 // ── ACTIONS ──
 async function approveListing(id) {
-  const { error } = await db
-    .from('listings')
-    .update({ active: true, status: 'active' })
-    .eq('id', id);
-
+  const listing = (await db.from('listings').select('*').eq('id', id).single()).data;
+  const { error } = await db.from('listings').update({ active: true, status: 'active' }).eq('id', id);
   if (error) { showToast('Error approving listing'); return; }
+
+  // Send approval email to lister
+  try {
+    await fetch('/api/send-notification', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'listing_approved', data: listing })
+    });
+  } catch (e) { console.warn('Email failed:', e); }
+
   showToast('✅ Listing approved and now live!');
   loadAdminPanel();
 }
 
 async function approveConveyancer(id) {
-  const { error } = await db
-    .from('conveyancers')
-    .update({ active: true, status: 'active' })
-    .eq('id', id);
-
+  const { error } = await db.from('conveyancers').update({ active: true, status: 'active' }).eq('id', id);
   if (error) { showToast('Error approving conveyancer'); return; }
   showToast('✅ Conveyancer approved and now listed!');
   loadAdminPanel();
@@ -357,7 +360,21 @@ async function confirmReject() {
   if (!reason) { showToast('Please provide a reason'); return; }
 
   if (currentRejectType === 'listing') {
+    const listing = (await db.from('listings').select('*').eq('id', currentRejectId).single()).data;
     await db.from('listings').update({ status: 'rejected', active: false, rejection_reason: reason }).eq('id', currentRejectId);
+
+    // Send rejection email to lister
+    try {
+      await fetch('/api/send-notification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'listing_rejected',
+          data: { ...listing, reason, contact_email: listing.contact_email }
+        })
+      });
+    } catch (e) { console.warn('Email failed:', e); }
+
   } else {
     await db.from('conveyancers').update({ status: 'rejected', active: false, rejection_reason: reason }).eq('id', currentRejectId);
   }
