@@ -104,7 +104,8 @@ function renderMyListings(listings) {
         </div>
         <div class="my-listing-actions">
           <a href="listing.html?id=${l.id}" class="btn btn-outline">View</a>
-          <button class="btn btn-danger" onclick="removeListing('${l.id}')">Remove</button>
+          <button class="btn btn-primary" onclick="markAsSold('${l.id}', '${l.address}', '${l.stripe_subscription_id || ''}')">🎉 Mark as sold</button>
+          <button class="btn btn-danger" onclick="removeListing('${l.id}', '${l.stripe_subscription_id || ''}')">Remove</button>
         </div>
       </div>
     `;
@@ -175,13 +176,89 @@ async function respondToOffer(offerId, status, offererEmail) {
   setTimeout(() => loadDashboard(), 600);
 }
 
-async function removeListing(id) {
-  if (!confirm('Remove this listing? It will no longer appear in searches.')) return;
-  const { error } = await db.from('listings').update({ active: false }).eq('id', id);
-  if (!error) {
-    showToast('Listing removed');
-    loadDashboard();
+async function markAsSold(id, address, subscriptionId) {
+  if (!confirm(`Mark "${address}" as sold?\n\nThis will:\n• Remove your listing from public view\n• Cancel your subscription\n• End your NestX access\n\nThis cannot be undone.`)) return;
+
+  const { data: { session } } = await db.auth.getSession();
+
+  // Update listing status
+  const { error } = await db.from('listings').update({
+    active: false,
+    status: 'sold',
+    sold_at: new Date().toISOString()
+  }).eq('id', id);
+
+  if (error) { showToast('Something went wrong — please try again'); return; }
+
+  // Cancel Stripe subscription via API
+  if (subscriptionId) {
+    try {
+      await fetch('/api/cancel-subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subscriptionId })
+      });
+    } catch (e) { console.warn('Subscription cancellation failed:', e); }
   }
+
+  // Send congratulations email
+  try {
+    await fetch('/api/send-notification', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'listing_sold',
+        data: {
+          address,
+          contact_email: session.user.email,
+          contact_name: session.user.user_metadata?.first_name || 'there'
+        }
+      })
+    });
+  } catch (e) { console.warn('Email failed:', e); }
+
+  // Show congratulations
+  document.getElementById('dashboardContent').innerHTML = `
+    <div style="text-align:center;padding:4rem 2rem;max-width:560px;margin:0 auto;">
+      <div style="font-size:56px;margin-bottom:1rem">🎉</div>
+      <h2 style="font-size:1.75rem;font-weight:700;margin-bottom:0.75rem;letter-spacing:-0.03em">Congratulations!</h2>
+      <p style="font-size:16px;color:var(--text-mid);line-height:1.7;margin-bottom:1.5rem">
+        Your property at <strong>${address}</strong> has been marked as sold.
+        Your listing has been removed and your subscription cancelled.
+      </p>
+      <div style="background:var(--green-light);border-radius:var(--radius-lg);padding:1.25rem 1.5rem;margin-bottom:2rem;">
+        <p style="font-size:15px;color:var(--green-dark);font-weight:500;margin:0;">
+          💰 Zero commission means every dollar of your profit stays with you. Well done!
+        </p>
+      </div>
+      <a href="../browse.html" class="btn btn-outline">Back to browse</a>
+    </div>
+  `;
+}
+
+async function removeListing(id, subscriptionId) {
+  if (!confirm('Remove this listing?\n\nThis will:\n• Remove your listing from public view\n• Cancel your subscription\n• End your NestX access\n\nThis cannot be undone.')) return;
+
+  const { error } = await db.from('listings').update({
+    active: false,
+    status: 'removed'
+  }).eq('id', id);
+
+  if (error) { showToast('Something went wrong — please try again'); return; }
+
+  // Cancel Stripe subscription via API
+  if (subscriptionId) {
+    try {
+      await fetch('/api/cancel-subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subscriptionId })
+      });
+    } catch (e) { console.warn('Subscription cancellation failed:', e); }
+  }
+
+  showToast('Listing removed');
+  loadDashboard();
 }
 
 loadDashboard();
