@@ -78,15 +78,13 @@ async function loadDashboard() {
     <!-- TABS -->
     <div style="display:flex;gap:0;border:1px solid var(--border);border-radius:10px;overflow:hidden;width:fit-content;margin-bottom:1.5rem;flex-wrap:wrap;">
       ${tabBtn('tab-listings', 'My listings', true)}
-      ${tabBtn('tab-swap-in', `Swap offers in ${pendingSwap > 0 ? `<span style="background:#dc2626;color:white;font-size:10px;padding:1px 5px;border-radius:10px;margin-left:4px;">${pendingSwap}</span>` : ''}`)}
-      ${tabBtn('tab-purchase-in', `Purchase offers in ${pendingPurchase > 0 ? `<span style="background:#dc2626;color:white;font-size:10px;padding:1px 5px;border-radius:10px;margin-left:4px;">${pendingPurchase}</span>` : ''}`)}
+      ${tabBtn('tab-offers-in', `Offers received ${(pendingSwap + pendingPurchase) > 0 ? `<span style="background:#dc2626;color:white;font-size:10px;padding:1px 5px;border-radius:10px;margin-left:4px;">${pendingSwap + pendingPurchase}</span>` : ''}`)}
       ${tabBtn('tab-offers-sent', 'Offers sent')}
       ${openToChat.length > 0 ? tabBtn('tab-open', `💬 Open to chat <span style="background:#0F6E56;color:white;font-size:10px;padding:1px 5px;border-radius:10px;margin-left:4px;">${openToChat.length}</span>`) : ''}
     </div>
 
     <div id="tab-listings" class="dash-tab active">${renderMyListings(listings)}</div>
-    <div id="tab-swap-in" class="dash-tab" style="display:none">${renderOffers(swapOffersReceived, listings, 'swap')}</div>
-    <div id="tab-purchase-in" class="dash-tab" style="display:none">${renderOffers(purchaseOffersReceived, listings, 'purchase')}</div>
+    <div id="tab-offers-in" class="dash-tab" style="display:none">${renderOffers([...swapOffersReceived, ...purchaseOffersReceived].sort((a,b) => new Date(b.created_at) - new Date(a.created_at)), listings)}</div>
     <div id="tab-offers-sent" class="dash-tab" style="display:none">${renderSentOffers(sentOffers)}</div>
     ${openToChat.length > 0 ? `<div id="tab-open" class="dash-tab" style="display:none">${renderOpenToChat(openToChat)}</div>` : ''}
   `;
@@ -156,10 +154,10 @@ function renderMyListings(listings) {
   }).join('');
 }
 
-function renderOffers(offers, listings, type = 'swap') {
-  const isPurchase = type === 'purchase';
+function renderOffers(offers, listings) {
+  
   if (!offers || offers.length === 0) {
-    return `<div class="empty-state"><p>No ${isPurchase ? 'purchase' : 'swap'} offers received yet.</p></div>`;
+    return `<div class="empty-state"><p>No offers received yet.</p></div>`;
   }
 
   return offers.map(o => {
