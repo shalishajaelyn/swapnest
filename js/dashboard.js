@@ -68,11 +68,10 @@ async function loadDashboard() {
 
     <!-- STATS GRID -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:2rem;">
-      ${statCard('🏡', 'Active listings', listings.length, '')}
-      ${statCard('🔄', 'Swap offers in', swapOffersReceived.length, pendingSwap > 0 ? `${pendingSwap} pending` : '')}
-      ${statCard('💰', 'Purchase offers in', purchaseOffersReceived.length, pendingPurchase > 0 ? `${pendingPurchase} pending` : '')}
+      ${statCard('🏡', 'My listings', listings.length, '')}
+      ${statCard('📥', 'Offers received', offersReceived.length, (pendingSwap + pendingPurchase) > 0 ? `${pendingSwap + pendingPurchase} pending` : '')}
       ${statCard('📤', 'Offers sent', sentOffers.length, '')}
-      ${openToChat.length > 0 ? statCard('💬', 'Open to chat', openToChat.length, 'Action needed', '#0F6E56') : statCard('💬', 'Open to chat', 0, '')}
+      ${statCard('💬', 'Open to chat', openToChat.length, openToChat.length > 0 ? 'Action needed' : '', openToChat.length > 0 ? '#0F6E56' : '')}
     </div>
 
     <!-- TABS -->
