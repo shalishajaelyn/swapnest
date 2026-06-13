@@ -203,7 +203,7 @@ async function deactivateListing() {
 // ── OFFER MODAL ──
 let currentOfferType = 'swap';
 
-function openOfferModal(type = 'swap') {
+async function openOfferModal(type = 'swap') {
   currentOfferType = type;
   const modal = document.getElementById('offerModal');
   const info = document.getElementById('offerTargetInfo');
@@ -222,6 +222,25 @@ function openOfferModal(type = 'swap') {
     if (swapFields) swapFields.style.display = 'block';
     const purchaseFields = document.getElementById('purchaseOnlyFields');
     if (purchaseFields) purchaseFields.style.display = 'none';
+  }
+
+  // Auto-fill sender details from their account
+  const { data: { session } } = await db.auth.getSession();
+  if (session) {
+    const meta = session.user.user_metadata;
+    const emailEl = document.getElementById('o_email');
+    const phoneEl = document.getElementById('o_phone');
+    if (emailEl) {
+      emailEl.value = session.user.email || '';
+      emailEl.readOnly = true;
+      emailEl.style.background = 'var(--surface)';
+      emailEl.title = 'Your registered email address';
+    }
+    if (phoneEl && meta?.phone) {
+      phoneEl.value = meta.phone;
+      phoneEl.readOnly = true;
+      phoneEl.style.background = 'var(--surface)';
+    }
   }
 
   modal.style.display = 'flex';
