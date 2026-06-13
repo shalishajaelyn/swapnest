@@ -361,35 +361,45 @@ async function processPayment() {
   payBtn.textContent = 'Processing…';
 
   try {
-    // 1. Create Supabase user account
-    const { data: authData, error: authError } = await db.auth.signUp({
-      email: document.getElementById('regEmail').value.trim(),
-      password: document.getElementById('regPassword').value,
-      options: {
-        data: {
-          username:     document.getElementById('username').value.trim(),
-          first_name:   document.getElementById('firstName').value.trim(),
-          last_name:    document.getElementById('lastName').value.trim(),
-          last_initial: document.getElementById('lastName').value.trim().charAt(0).toUpperCase(),
-          phone:        document.getElementById('regPhone').value.trim(),
-          user_type:    'lister'
+    // 1. Get or create Supabase user account
+    let userId;
+    const { data: { session: existingSession } } = await db.auth.getSession();
+
+    if (existingSession) {
+      // Already signed in — use existing account
+      userId = existingSession.user.id;
+    } else {
+      // New user — create account
+      const { data: authData, error: authError } = await db.auth.signUp({
+        email: document.getElementById('regEmail').value.trim(),
+        password: document.getElementById('regPassword').value,
+        options: {
+          data: {
+            username:     document.getElementById('username').value.trim(),
+            first_name:   document.getElementById('firstName').value.trim(),
+            last_name:    document.getElementById('lastName').value.trim(),
+            last_initial: document.getElementById('lastName').value.trim().charAt(0).toUpperCase(),
+            phone:        document.getElementById('regPhone').value.trim(),
+            user_type:    'lister'
+          }
         }
-      }
-    });
+      });
+      if (authError) throw new Error(authError.message);
+      userId = authData.user.id;
+    }
 
-    if (authError) throw new Error(authError.message);
-    const userId = authData.user.id;
+    // Get email for Stripe
+    const userEmail = existingSession?.user?.email || document.getElementById('regEmail').value.trim();
 
-    // 2. Create Stripe PaymentIntent via our backend
-    // NOTE: Replace this URL with your actual backend endpoint
+    // 2. Create Stripe PaymentIntent
     const intentRes = await fetch('/api/create-payment-intent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        amount: Math.round(currentFeeNZD * 100), // Stripe uses cents
+        amount: Math.round(currentFeeNZD * 100),
         currency: 'nzd',
         userId,
-        email: document.getElementById('regEmail').value.trim()
+        email: userEmail
       })
     });
 
@@ -402,7 +412,7 @@ async function processPayment() {
         card: cardElement,
         billing_details: {
           name: `${document.getElementById('firstName').value.trim()} ${document.getElementById('lastName').value.trim()}`,
-          email: document.getElementById('regEmail').value.trim()
+          email: userEmail
         }
       }
     });
@@ -550,6 +560,19 @@ async function initListingAuth() {
   } else {
     gate.style.display = 'none';
     form.style.display = 'block';
+
+    // If already signed in, skip Step 1 — go straight to property details
+    const meta = session.user.user_metadata;
+    if (meta?.first_name) {
+      // Pre-fill Step 1 fields silently
+      if (document.getElementById('username')) document.getElementById('username').value = meta.username || '';
+      if (document.getElementById('firstName')) document.getElementById('firstName').value = meta.first_name || '';
+      if (document.getElementById('lastName')) document.getElementById('lastName').value = meta.last_name || '';
+      if (document.getElementById('regEmail')) document.getElementById('regEmail').value = session.user.email || '';
+      if (document.getElementById('regPhone')) document.getElementById('regPhone').value = meta.phone || '';
+      // Skip to Step 2
+      goToStep(2);
+    }
   }
 
   // Listen for sign in
