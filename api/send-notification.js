@@ -79,6 +79,37 @@ module.exports = async (req, res) => {
           </div>
         </div>
       `;
+    } else if (type === 'user_feedback') {
+      subject = `⭐ NestX feedback — ${data.rating ? data.rating + '/5 stars' : 'no rating'} — ${data.address}`;
+      html = `
+        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+          <div style="background:#0F6E56;padding:20px 24px;border-radius:10px 10px 0 0;">
+            <h1 style="color:white;margin:0;font-size:20px;font-weight:700;">NestX</h1>
+            <p style="color:#9FE1CB;margin:4px 0 0;font-size:14px;">New user feedback received</p>
+          </div>
+          <div style="background:#f5f4f0;padding:24px;border-radius:0 0 10px 10px;">
+            <h2 style="font-size:18px;margin:0 0 16px;color:#1a1a18;">Feedback from a sold lister</h2>
+            <table style="width:100%;border-collapse:collapse;font-size:14px;">
+              <tr style="border-bottom:1px solid #e0dfdb;">
+                <td style="padding:8px 0;color:#767672;width:40%">Property sold</td>
+                <td style="padding:8px 0;font-weight:500;">${data.address}</td>
+              </tr>
+              <tr style="border-bottom:1px solid #e0dfdb;">
+                <td style="padding:8px 0;color:#767672;">User email</td>
+                <td style="padding:8px 0;">${data.email}</td>
+              </tr>
+              <tr style="border-bottom:1px solid #e0dfdb;">
+                <td style="padding:8px 0;color:#767672;">Star rating</td>
+                <td style="padding:8px 0;font-size:18px;">${data.rating ? '⭐'.repeat(data.rating) + ` (${data.rating}/5)` : 'No rating given'}</td>
+              </tr>
+              <tr>
+                <td style="padding:8px 0;color:#767672;vertical-align:top;">Testimonial</td>
+                <td style="padding:8px 0;">${data.text || '<em style="color:#767672">No comment left</em>'}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      `;
     } else if (type === 'new_conveyancer') {
       subject = `⚖️ New conveyancer application — ${data.first_name} ${data.last_name}, ${data.firm}`;
       html = `
