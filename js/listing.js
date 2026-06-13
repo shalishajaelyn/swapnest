@@ -27,14 +27,17 @@ async function loadListing() {
   }
 
   currentListing = data;
-  document.title = `${data.address} — SwapNest`;
+  document.title = `${data.address} — NestX`;
   renderListing(data);
 }
 
-function renderListing(l) {
+async function renderListing(l) {
   const container = document.getElementById('listingDetail');
-  const { data: { session } } = db.auth.getSession ? { data: { session: null } } : { data: { session: null } };
-  const isOwner = false; // will be updated after auth check
+
+  // Check if current user is the owner
+  const { data: { session } } = await db.auth.getSession();
+  const isOwner = session && session.user.id === l.user_id;
+  const isPremium = l.plan === 'premium' || l.plan === 'swap_or_sell';
 
   const photos = l.photos && l.photos.length > 0 ? l.photos : null;
   const coverPhoto = photos
@@ -56,10 +59,6 @@ function renderListing(l) {
     ? `<p style="font-size:13px;color:var(--text-muted);margin-top:4px">Preferred location: ${l.swap_location}</p>`
     : '';
 
-  const phoneHtml = l.show_phone && l.contact_phone
-    ? `<div class="contact-phone">📞 ${l.contact_phone}</div>`
-    : '';
-
   const garagesHtml = l.garages > 0
     ? `<span>🚗 ${l.garages} garage${l.garages > 1 ? 's' : ''}</span>`
     : '';
@@ -67,6 +66,37 @@ function renderListing(l) {
   const landHtml = l.land_size
     ? `<span>📐 ${l.land_size.toLocaleString()}m²</span>`
     : '';
+
+  // Premium badge
+  const premiumBadge = isPremium
+    ? `<span class="tag tag-premium">👑 Premium</span>`
+    : '';
+
+  // Public contact details (only for premium listings where lister opted in)
+  const publicContactHtml = isPremium && (l.show_email || l.show_phone)
+    ? `<div class="listing-public-contact">
+        <div style="font-size:13px;font-weight:600;color:var(--green-dark);margin-bottom:8px;">📬 Contact seller directly</div>
+        ${l.show_email && l.contact_email ? `<div style="font-size:14px;margin-bottom:4px;">✉️ <a href="mailto:${l.contact_email}" style="color:var(--green)">${l.contact_email}</a></div>` : ''}
+        ${l.show_phone && l.contact_phone ? `<div style="font-size:14px;">📞 <a href="tel:${l.contact_phone}" style="color:var(--green)">${l.contact_phone}</a></div>` : ''}
+        <p style="font-size:12px;color:var(--text-muted);margin-top:8px;">Contact the seller directly — no account needed.</p>
+      </div>`
+    : '';
+
+  // Offer buttons
+  const offerButtons = isOwner
+    ? '' // owner can't offer on their own listing
+    : isPremium
+    ? `<button class="btn btn-primary btn-full" onclick="openOfferModal('swap')" id="makeSwapOfferBtn">🔄 Make a swap offer</button>
+       <button class="btn btn-outline btn-full" onclick="openOfferModal('purchase')" id="makePurchaseOfferBtn" style="margin-top:8px;">💰 Make a purchase offer</button>`
+    : `<button class="btn btn-primary btn-full" onclick="openOfferModal('swap')" id="makeOfferBtn">🔄 Make a swap offer</button>`;
+
+  // Sidebar contact info
+  const sidebarContact = isPremium && (l.show_email || l.show_phone)
+    ? '' // shown in main content instead
+    : `<div class="sidebar-contact">
+        <div class="contact-name">${l.username || l.contact_name}</div>
+        <p style="font-size:12px;color:var(--text-muted);margin-top:6px">Contact details shared only when both parties are open to chat</p>
+      </div>`;
 
   container.innerHTML = `
     <div class="listing-main">
@@ -98,6 +128,8 @@ function renderListing(l) {
         ${swapNotes}
         ${swapLocation}
       </div>
+
+      ${publicContactHtml}
     </div>
 
     <aside class="listing-sidebar">
@@ -107,24 +139,18 @@ function renderListing(l) {
         <div class="sidebar-tags">
           <span class="tag tag-swap">Swap ready</span>
           <span class="tag ${swapTagClass(l.swap_pref)}">${swapLabel(l.swap_pref)}</span>
+          ${premiumBadge}
         </div>
-        <button class="btn btn-primary btn-full" onclick="openOfferModal()" id="makeOfferBtn">
-          Make a swap offer
-        </button>
-        <div class="sidebar-contact">
-          <div class="contact-name">${l.username || l.contact_name}</div>
-          <p style="font-size:12px;color:var(--text-muted);margin-top:6px">Send a swap offer to connect with this seller</p>
-          <p style="font-size:11px;color:var(--text-muted);margin-top:4px">Contact details shared only when both parties are open to chat</p>
-        </div>
+        ${offerButtons}
+        ${sidebarContact}
       </div>
 
-      <div class="sidebar-card" id="ownerControls" style="display:none">
+      ${isOwner ? `
+      <div class="sidebar-card" id="ownerControls">
         <p style="font-size:13px;font-weight:600;margin-bottom:10px">Your listing</p>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <a href="../post.html?edit=${l.id}" class="btn btn-outline btn-full">Edit listing</a>
-          <button class="btn btn-danger btn-full" onclick="deactivateListing()">Remove listing</button>
-        </div>
-      </div>
+        ${!isPremium ? `<a href="dashboard.html" class="btn btn-outline btn-full" style="margin-bottom:8px;">👑 Upgrade to Premium</a>` : ''}
+        <button class="btn btn-danger btn-full" onclick="deactivateListing()">Remove listing</button>
+      </div>` : ''}
     </aside>
   `;
 
@@ -174,11 +200,30 @@ async function deactivateListing() {
   }
 }
 
-// ── SWAP OFFER MODAL ──
-function openOfferModal() {
+// ── OFFER MODAL ──
+let currentOfferType = 'swap';
+
+function openOfferModal(type = 'swap') {
+  currentOfferType = type;
   const modal = document.getElementById('offerModal');
   const info = document.getElementById('offerTargetInfo');
-  if (info) info.textContent = `Offering a swap for: ${currentListing.address} (listed at ${fmt(currentListing.price)})`;
+  const swapFields = document.getElementById('swapOnlyFields');
+  const modalTitle = document.querySelector('#offerModal h2');
+
+  if (type === 'purchase') {
+    if (modalTitle) modalTitle.textContent = '💰 Make a purchase offer';
+    if (info) info.textContent = `Purchase offer for: ${currentListing.address} (listed at ${fmt(currentListing.price)})`;
+    if (swapFields) swapFields.style.display = 'none';
+    const purchaseFields = document.getElementById('purchaseOnlyFields');
+    if (purchaseFields) purchaseFields.style.display = 'block';
+  } else {
+    if (modalTitle) modalTitle.textContent = '🔄 Make a swap offer';
+    if (info) info.textContent = `Swap offer for: ${currentListing.address} (listed at ${fmt(currentListing.price)})`;
+    if (swapFields) swapFields.style.display = 'block';
+    const purchaseFields = document.getElementById('purchaseOnlyFields');
+    if (purchaseFields) purchaseFields.style.display = 'none';
+  }
+
   modal.style.display = 'flex';
   document.getElementById('o_diff').value = '';
   document.getElementById('diffExplainer').textContent = '';
@@ -202,22 +247,23 @@ function calcOfferDiff() {
 }
 
 async function submitOffer() {
-  const address = document.getElementById('o_address').value.trim();
-  const value   = parseInt(document.getElementById('o_value').value);
+  const isPurchase = currentOfferType === 'purchase';
+  const address = isPurchase ? 'Purchase offer' : document.getElementById('o_address').value.trim();
+  const value   = isPurchase
+    ? parseInt(document.getElementById('o_purchase_price').value)
+    : parseInt(document.getElementById('o_value').value);
   const msg     = document.getElementById('o_msg').value.trim();
   const email   = document.getElementById('o_email').value.trim();
   const phone   = document.getElementById('o_phone').value.trim();
 
-  if (!address || !value || !msg || !email) {
+  if ((!isPurchase && !document.getElementById('o_address').value.trim()) || !value || !msg || !email) {
     showToast('Please fill in all required fields');
     return;
   }
 
   const { data: { session } } = await db.auth.getSession();
-
-  // Get offerer's first name from their profile if signed in
   const offererFirstName = session?.user?.user_metadata?.first_name || null;
-  const offererUsername = session?.user?.user_metadata?.username || null;
+  const offererUsername  = session?.user?.user_metadata?.username || null;
 
   const offer = {
     listing_id:         currentListing.id,
@@ -229,8 +275,9 @@ async function submitOffer() {
     offerer_username:   offererUsername,
     offer_address:      address,
     offer_value:        value,
-    cash_diff:          currentListing.price - value,
+    cash_diff:          isPurchase ? 0 : currentListing.price - value,
     message:            msg,
+    offer_type:         currentOfferType,
     status:             'pending',
   };
 
@@ -238,12 +285,11 @@ async function submitOffer() {
 
   if (error) {
     showToast('Could not send offer — please try again');
-    console.error(error);
     return;
   }
 
   closeOfferModal();
-  showToast('Swap offer sent! The seller will be in touch.');
+  showToast(isPurchase ? '💰 Purchase offer sent!' : '🔄 Swap offer sent! The seller will be in touch.');
 }
 
 // Close modal on background click
