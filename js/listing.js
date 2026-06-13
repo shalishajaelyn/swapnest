@@ -262,8 +262,7 @@ async function openOfferModal(type = 'swap') {
     if (purchaseFields) purchaseFields.style.display = 'none';
   }
 
-  // Auto-fill sender details from their account
-  const { data: { session } } = await db.auth.getSession();
+  // Auto-fill sender details from their account (reuse session from above)
   if (session) {
     const meta = session.user.user_metadata;
     const emailEl = document.getElementById('o_email');
