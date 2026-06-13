@@ -79,13 +79,13 @@ async function loadDashboard() {
       ${tabBtn('tab-listings', 'My listings', true)}
       ${tabBtn('tab-offers-in', `Offers received ${(pendingSwap + pendingPurchase) > 0 ? `<span style="background:#dc2626;color:white;font-size:10px;padding:1px 5px;border-radius:10px;margin-left:4px;">${pendingSwap + pendingPurchase}</span>` : ''}`)}
       ${tabBtn('tab-offers-sent', 'Offers sent')}
-      ${openToChat.length > 0 ? tabBtn('tab-open', `💬 Open to chat <span style="background:#0F6E56;color:white;font-size:10px;padding:1px 5px;border-radius:10px;margin-left:4px;">${openToChat.length}</span>`) : ''}
+      ${tabBtn('tab-open', `💬 Open to chat ${openToChat.length > 0 ? `<span style="background:#0F6E56;color:white;font-size:10px;padding:1px 5px;border-radius:10px;margin-left:4px;">${openToChat.length}</span>` : ''}`)}
     </div>
 
     <div id="tab-listings" class="dash-tab active">${renderMyListings(listings)}</div>
     <div id="tab-offers-in" class="dash-tab" style="display:none">${renderOffers([...swapOffersReceived, ...purchaseOffersReceived].sort((a,b) => new Date(b.created_at) - new Date(a.created_at)), listings)}</div>
     <div id="tab-offers-sent" class="dash-tab" style="display:none">${renderSentOffers(sentOffers)}</div>
-    ${openToChat.length > 0 ? `<div id="tab-open" class="dash-tab" style="display:none">${renderOpenToChat(openToChat)}</div>` : ''}
+    <div id="tab-open" class="dash-tab" style="display:none">${renderOpenToChat(openToChat)}</div>
   `;
 }
 
@@ -241,7 +241,7 @@ function renderSentOffers(offers) {
 
 function renderOpenToChat(offers) {
   if (!offers || offers.length === 0) {
-    return `<div class="empty-state"><p>No open to chat conversations yet.</p></div>`;
+    return `<div class="empty-state"><p>No open to chat conversations yet. When a seller accepts your offer, they'll appear here.</p></div>`;
   }
 
   return `
