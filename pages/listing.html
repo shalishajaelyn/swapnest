@@ -33,33 +33,46 @@
     <div class="loading-state">Loading listing…</div>
   </div>
 
-  <!-- SWAP OFFER MODAL -->
+  <!-- OFFER MODAL -->
   <div class="modal-overlay" id="offerModal" style="display:none">
     <div class="modal">
       <div class="modal-header">
-        <h2>Make a swap offer</h2>
+        <h2>🔄 Make a swap offer</h2>
         <button class="modal-close" onclick="closeOfferModal()">✕</button>
       </div>
       <div class="modal-body">
         <div class="offer-target-info" id="offerTargetInfo"></div>
-        <div class="form-row">
-          <label>Your property address <span class="req">*</span></label>
-          <input type="text" id="o_address" placeholder="e.g. 22 Hill Road, Newtown, Wellington" required>
-        </div>
-        <div class="form-grid-2">
+
+        <!-- SWAP ONLY FIELDS -->
+        <div id="swapOnlyFields">
           <div class="form-row">
-            <label>Your estimated value ($) <span class="req">*</span></label>
-            <input type="number" id="o_value" placeholder="720000" oninput="calcOfferDiff()">
+            <label>Your property address <span class="req">*</span></label>
+            <input type="text" id="o_address" placeholder="e.g. 22 Hill Road, Newtown, Wellington">
           </div>
+          <div class="form-grid-2">
+            <div class="form-row">
+              <label>Your estimated value ($) <span class="req">*</span></label>
+              <input type="number" id="o_value" placeholder="720000" oninput="calcOfferDiff()">
+            </div>
+            <div class="form-row">
+              <label>Cash difference ($)</label>
+              <input type="number" id="o_diff" placeholder="Auto-calculated" readonly style="background:var(--surface)">
+            </div>
+          </div>
+          <div id="diffExplainer" class="diff-explainer"></div>
+        </div>
+
+        <!-- PURCHASE ONLY FIELDS -->
+        <div id="purchaseOnlyFields" style="display:none">
           <div class="form-row">
-            <label>Cash difference ($)</label>
-            <input type="number" id="o_diff" placeholder="Auto-calculated" readonly style="background:var(--surface)">
+            <label>Your purchase offer ($) <span class="req">*</span></label>
+            <input type="number" id="o_purchase_price" placeholder="e.g. 850000">
           </div>
         </div>
-        <div id="diffExplainer" class="diff-explainer"></div>
+
         <div class="form-row">
           <label>Message to seller <span class="req">*</span></label>
-          <textarea id="o_msg" rows="4" placeholder="Introduce your home and why you think it's a great swap…"></textarea>
+          <textarea id="o_msg" rows="4" placeholder="Introduce yourself and why you're interested…"></textarea>
         </div>
         <div class="form-row">
           <label>Your contact email <span class="req">*</span></label>
@@ -72,7 +85,7 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-outline" onclick="closeOfferModal()">Cancel</button>
-        <button class="btn btn-primary" onclick="submitOffer()">Send swap offer</button>
+        <button class="btn btn-primary" onclick="submitOffer()">Send offer</button>
       </div>
     </div>
   </div>
