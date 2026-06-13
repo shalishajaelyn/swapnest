@@ -161,6 +161,7 @@ function renderOffers(offers, listings) {
 
   return offers.map(o => {
     const listing = listings.find(l => l.id === o.listing_id);
+    const isPurchase = o.offer_type === 'purchase';
     const badgeClass = { pending: 'badge-pending', open_to_chat: 'badge-accepted', declined: 'badge-declined' }[o.status] || 'badge-pending';
     const badgeLabel = { pending: 'Pending', open_to_chat: 'Open to chat', declined: 'Declined' }[o.status] || 'Pending';
 
