@@ -56,8 +56,8 @@
         <div class="profit-stat">
           <span class="profit-icon">📅</span>
           <div>
-            <strong>3 months included</strong>
-            <span>Then just $40/month</span>
+            <strong>One-off fee</strong>
+            <span>No monthly fees</span>
           </div>
         </div>
         <div class="profit-stat">
@@ -243,7 +243,7 @@
               <span id="calcRV">—</span>
             </div>
             <div class="fee-line">
-              <span>Registration fee (0.2% of RV)</span>
+              <span>Registration fee (0.1% of RV)</span>
               <span id="calcPercent">—</span>
             </div>
             <div class="fee-line fee-minimum" id="minimumNote" style="display:none">
@@ -255,8 +255,8 @@
               <span id="calcTotal">—</span>
             </div>
             <div class="fee-line fee-included">
-              <span>✅ Includes first 3 months</span>
-              <span>Then $40/month from month 4</span>
+              <span>✅ One-off registration fee</span>
+              <span>No monthly fees</span>
             </div>
           </div>
           <div class="fee-profit-note">
@@ -437,7 +437,7 @@
           <div class="fee-calc-header"><span>📊 Order summary</span></div>
           <div class="fee-calc-body">
             <div class="fee-line">
-              <span>Registration fee (0.2% of RV)</span>
+              <span>Registration fee (0.1% of RV)</span>
               <span id="paymentFeeDisplay">—</span>
             </div>
             <div class="fee-line" style="font-size:12px;color:var(--text-muted)">
@@ -445,12 +445,10 @@
               <span>15% GST included</span>
             </div>
             <div class="fee-line fee-included">
-              <span>✅ First 3 months included</span>
-              <span>No charge until month 4</span>
+              <span>✅ One-off registration fee</span>
+              <span>No monthly fees ever</span>
             </div>
             <div class="fee-line fee-included">
-              <span>📅 From month 4</span>
-              <span>$40.00/month</span>
             </div>
             <div class="fee-line fee-total">
               <span>Due today</span>
@@ -460,6 +458,16 @@
           <div class="fee-profit-note">
             💰 <strong>Zero commission forever.</strong> Keep 100% of your profit when you sell or swap.
           </div>
+        </div>
+
+        <!-- DISCOUNT CODE -->
+        <div class="form-row" style="margin-top:1rem;">
+          <label>Discount code</label>
+          <div style="display:flex;gap:8px;">
+            <input type="text" id="discountCode" placeholder="Enter code (optional)" style="flex:1;text-transform:uppercase;">
+            <button type="button" class="btn btn-outline" onclick="applyDiscount()">Apply</button>
+          </div>
+          <div id="discountMsg" style="font-size:13px;margin-top:6px;display:none;"></div>
         </div>
 
         <div class="form-row" style="margin-top:1.5rem">
