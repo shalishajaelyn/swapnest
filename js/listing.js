@@ -192,7 +192,7 @@ function openLightbox(url) {
     const hasMultiple = photos.length > 1;
     lb.innerHTML = `
       <img src="${photos[index]}" alt="Property photo ${index + 1}"
-        style="max-width:calc(100% - 100px);max-height:90vh;object-fit:contain;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,0.5);user-select:none;">
+        style="max-width:100%;max-height:100vh;width:100%;height:100vh;object-fit:contain;user-select:none;">
       <button onclick="document.getElementById('photoLightbox').remove()"
         style="position:fixed;top:16px;right:16px;background:rgba(255,255,255,0.15);border:none;color:white;font-size:24px;width:44px;height:44px;border-radius:50%;cursor:pointer;">✕</button>
       ${hasMultiple ? `
