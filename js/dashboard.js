@@ -336,32 +336,130 @@ async function upgradeToPremium(listingId) {
   window.location.href = `premium-upgrade.html?listing=${listingId}`;
 }
 
+// ── FEEDBACK MODAL ──
+let pendingSaleId = null;
+let pendingSaleAddress = null;
+let pendingSaleSubscriptionId = null;
+let pendingSaleSession = null;
+
 async function markAsSold(id, address, subscriptionId) {
-  if (!confirm(`Mark "${address}" as sold?\n\nThis will:\n• Remove your listing from public view\n• Cancel your subscription\n• End your NestX access\n\nThis cannot be undone.`)) return;
+  if (!confirm(`Mark "${address}" as sold?\n\nThis will:\n• Remove your listing from public view\n• End your NestX access\n\nThis cannot be undone.`)) return;
 
   const { data: { session } } = await db.auth.getSession();
 
-  // Update listing status
+  // Store for after feedback
+  pendingSaleId = id;
+  pendingSaleAddress = address;
+  pendingSaleSubscriptionId = subscriptionId;
+  pendingSaleSession = session;
+
+  // Show feedback modal
+  showFeedbackModal(address);
+}
+
+function showFeedbackModal(address) {
+  // Remove existing modal if any
+  document.getElementById('feedbackModal')?.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'feedbackModal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;display:flex;align-items:center;justify-content:center;padding:1rem;';
+  modal.innerHTML = `
+    <div style="background:white;border-radius:16px;padding:2rem;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);">
+      <div style="text-align:center;margin-bottom:1.5rem;">
+        <div style="font-size:40px;margin-bottom:0.5rem;">🎉</div>
+        <h2 style="font-size:1.3rem;font-weight:700;margin-bottom:0.5rem;">Congratulations on your sale!</h2>
+        <p style="font-size:14px;color:#767672;">Before you go — we'd love to hear about your experience with NestX. It only takes a moment.</p>
+      </div>
+
+      <div style="margin-bottom:1.25rem;">
+        <p style="font-size:13px;font-weight:600;margin-bottom:10px;color:#1a1a18;">How would you rate NestX?</p>
+        <div style="display:flex;gap:8px;justify-content:center;" id="starRating">
+          ${[1,2,3,4,5].map(n => `
+            <button onclick="setRating(${n})" id="star${n}"
+              style="font-size:32px;background:none;border:none;cursor:pointer;opacity:0.3;transition:opacity 0.15s;padding:4px;">⭐</button>
+          `).join('')}
+        </div>
+        <p id="ratingLabel" style="text-align:center;font-size:13px;color:#0F6E56;margin-top:6px;min-height:18px;"></p>
+      </div>
+
+      <div style="margin-bottom:1.5rem;">
+        <label style="font-size:13px;font-weight:600;color:#1a1a18;display:block;margin-bottom:6px;">Tell us about your experience (optional)</label>
+        <textarea id="feedbackText" rows="4" placeholder="Did NestX help you find your buyer or swap partner? What worked well? What could be better?"
+          style="width:100%;padding:10px 14px;font-size:14px;border:1px solid #d4d3cf;border-radius:8px;font-family:inherit;resize:vertical;box-sizing:border-box;"></textarea>
+      </div>
+
+      <div style="display:flex;gap:10px;">
+        <button onclick="skipFeedback()" style="flex:1;padding:10px;font-size:14px;border:1px solid #d4d3cf;border-radius:8px;background:transparent;cursor:pointer;font-family:inherit;">Skip</button>
+        <button onclick="submitFeedback()" style="flex:2;padding:10px;font-size:14px;font-weight:600;border:none;border-radius:8px;background:#0F6E56;color:white;cursor:pointer;font-family:inherit;">Submit feedback</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+let selectedRating = 0;
+const ratingLabels = { 1: 'Poor', 2: 'Fair', 3: 'Good', 4: 'Very good', 5: 'Excellent!' };
+
+function setRating(n) {
+  selectedRating = n;
+  [1,2,3,4,5].forEach(i => {
+    document.getElementById(`star${i}`).style.opacity = i <= n ? '1' : '0.3';
+  });
+  document.getElementById('ratingLabel').textContent = ratingLabels[n] || '';
+}
+
+async function submitFeedback() {
+  const rating = selectedRating;
+  const text = document.getElementById('feedbackText').value.trim();
+
+  // Send feedback email to admin
+  if (rating > 0 || text) {
+    try {
+      await fetch('/api/send-notification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'user_feedback',
+          data: {
+            rating,
+            text,
+            address: pendingSaleAddress,
+            email: pendingSaleSession?.user?.email || '—'
+          }
+        })
+      });
+    } catch (e) { console.warn('Feedback email failed:', e); }
+  }
+
+  document.getElementById('feedbackModal')?.remove();
+  await completeSale();
+}
+
+async function skipFeedback() {
+  document.getElementById('feedbackModal')?.remove();
+  await completeSale();
+}
+
+async function completeSale() {
   const { error } = await db.from('listings').update({
     active: false,
     status: 'sold',
     sold_at: new Date().toISOString()
-  }).eq('id', id);
+  }).eq('id', pendingSaleId);
 
   if (error) { showToast('Something went wrong — please try again'); return; }
 
-  // Cancel Stripe subscription via API
-  if (subscriptionId) {
+  if (pendingSaleSubscriptionId) {
     try {
       await fetch('/api/cancel-subscription', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subscriptionId })
+        body: JSON.stringify({ subscriptionId: pendingSaleSubscriptionId })
       });
     } catch (e) { console.warn('Subscription cancellation failed:', e); }
   }
 
-  // Send congratulations email
   try {
     await fetch('/api/send-notification', {
       method: 'POST',
@@ -369,31 +467,33 @@ async function markAsSold(id, address, subscriptionId) {
       body: JSON.stringify({
         type: 'listing_sold',
         data: {
-          address,
-          contact_email: session.user.email,
-          contact_name: session.user.user_metadata?.first_name || 'there'
+          address: pendingSaleAddress,
+          contact_email: pendingSaleSession?.user?.email,
+          contact_name: pendingSaleSession?.user?.user_metadata?.first_name || 'there'
         }
       })
     });
   } catch (e) { console.warn('Email failed:', e); }
 
-  // Show congratulations
   document.getElementById('dashboardContent').innerHTML = `
     <div style="text-align:center;padding:4rem 2rem;max-width:560px;margin:0 auto;">
       <div style="font-size:56px;margin-bottom:1rem">🎉</div>
       <h2 style="font-size:1.75rem;font-weight:700;margin-bottom:0.75rem;letter-spacing:-0.03em">Congratulations!</h2>
-      <p style="font-size:16px;color:var(--text-mid);line-height:1.7;margin-bottom:1.5rem">
-        Your property at <strong>${address}</strong> has been marked as sold.
-        Your listing has been removed and your subscription cancelled.
+      <p style="font-size:16px;color:#4a4a47;line-height:1.7;margin-bottom:1.5rem">
+        Your property at <strong>${pendingSaleAddress}</strong> has been marked as sold.
+        Your listing has been removed and your access has ended.
       </p>
-      <div style="background:var(--green-light);border-radius:var(--radius-lg);padding:1.25rem 1.5rem;margin-bottom:2rem;">
-        <p style="font-size:15px;color:var(--green-dark);font-weight:500;margin:0;">
+      <div style="background:#E1F5EE;border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:2rem;">
+        <p style="font-size:15px;color:#085041;font-weight:500;margin:0;">
           💰 Zero commission means every dollar of your profit stays with you. Well done!
         </p>
       </div>
-      <a href="../browse.html" class="btn btn-outline">Back to browse</a>
+      <p style="font-size:14px;color:#767672;margin-bottom:1.5rem;">You have been signed out. If you list another property in future, we'd love to have you back.</p>
+      <a href="../index.html" class="btn btn-outline">Back to NestX</a>
     </div>
   `;
+
+  setTimeout(async () => { await db.auth.signOut(); }, 2000);
 }
 
 async function removeListing(id, subscriptionId) {
