@@ -173,7 +173,7 @@ function calculateFee() {
 
   if (!rv) { calcBox.style.display = 'none'; currentFeeNZD = 0; return; }
 
-  const pct = rv * 0.002;
+  const pct = rv * 0.001;
   const fee = Math.max(pct, 500);
   currentFeeNZD = fee;
 
@@ -200,6 +200,66 @@ function goToStep(step) {
     document.getElementById('paymentFeeDisplay').textContent = '$' + currentFeeNZD.toLocaleString('en-NZ', {minimumFractionDigits:2, maximumFractionDigits:2});
     document.getElementById('paymentTotalDisplay').textContent = '$' + currentFeeNZD.toLocaleString('en-NZ', {minimumFractionDigits:2, maximumFractionDigits:2});
   }
+}
+
+// ── DISCOUNT CODES ──
+const DISCOUNT_CODES = {
+  'EARLYBIRD': { type: 'percent', value: 20,  label: '20% early bird discount applied!' },
+  'LAUNCH50':  { type: 'percent', value: 50,  label: '50% launch discount applied!' },
+  'FRIEND':    { type: 'fixed',   value: 100, label: '$100 friend referral discount applied!' },
+  'PRELAUNCH': { type: 'percent', value: 100, label: '100% prelaunch discount applied!' }
+};
+
+let appliedDiscount = null;
+
+function applyDiscount() {
+  const code = document.getElementById('discountCode').value.trim().toUpperCase();
+  const msgEl = document.getElementById('discountMsg');
+  const discount = DISCOUNT_CODES[code];
+
+  if (!code) {
+    msgEl.textContent = 'Please enter a discount code.';
+    msgEl.style.color = '#dc2626';
+    msgEl.style.display = 'block';
+    return;
+  }
+
+  if (!discount) {
+    msgEl.textContent = 'Invalid discount code.';
+    msgEl.style.color = '#dc2626';
+    msgEl.style.display = 'block';
+    appliedDiscount = null;
+    updatePaymentTotal();
+    return;
+  }
+
+  appliedDiscount = { ...discount, code };
+  msgEl.textContent = '✅ ' + discount.label;
+  msgEl.style.color = '#0F6E56';
+  msgEl.style.display = 'block';
+  updatePaymentTotal();
+}
+
+function updatePaymentTotal() {
+  if (!currentFeeNZD) return;
+  let finalFee = currentFeeNZD;
+
+  if (appliedDiscount) {
+    if (appliedDiscount.type === 'percent') {
+      finalFee = currentFeeNZD * (1 - appliedDiscount.value / 100);
+    } else {
+      finalFee = Math.max(0, currentFeeNZD - appliedDiscount.value);
+    }
+  }
+
+  // Minimum $1 to avoid Stripe errors
+  finalFee = Math.max(1, finalFee);
+
+  const fmt = (n) => '$' + n.toLocaleString('en-NZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  document.getElementById('paymentTotalDisplay').textContent = fmt(finalFee);
+
+  // Update the actual charge amount
+  currentFeeNZD = finalFee;
 }
 
 // ── STEP 1 VALIDATION ──
