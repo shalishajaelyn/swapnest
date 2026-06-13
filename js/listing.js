@@ -179,24 +179,64 @@ function switchPhoto(url, thumbEl) {
 }
 
 function openLightbox(url) {
-  // Remove existing lightbox
   document.getElementById('photoLightbox')?.remove();
+
+  // Get all photos from current listing
+  const photos = currentListing?.photos || [url];
+  let currentIndex = photos.indexOf(url);
+  if (currentIndex === -1) currentIndex = 0;
+
+  function buildLightbox(index) {
+    const lb = document.getElementById('photoLightbox');
+    if (!lb) return;
+    const hasMultiple = photos.length > 1;
+    lb.innerHTML = `
+      <img src="${photos[index]}" alt="Property photo ${index + 1}"
+        style="max-width:calc(100% - 100px);max-height:90vh;object-fit:contain;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,0.5);user-select:none;">
+      <button onclick="document.getElementById('photoLightbox').remove()"
+        style="position:fixed;top:16px;right:16px;background:rgba(255,255,255,0.15);border:none;color:white;font-size:24px;width:44px;height:44px;border-radius:50%;cursor:pointer;">✕</button>
+      ${hasMultiple ? `
+        <button onclick="lightboxNav(-1)"
+          style="position:fixed;left:12px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.15);border:none;color:white;font-size:28px;width:48px;height:48px;border-radius:50%;cursor:pointer;">‹</button>
+        <button onclick="lightboxNav(1)"
+          style="position:fixed;right:12px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.15);border:none;color:white;font-size:28px;width:48px;height:48px;border-radius:50%;cursor:pointer;">›</button>
+        <div style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.6);font-size:13px;">${index + 1} / ${photos.length}</div>
+      ` : ''}
+    `;
+  }
+
+  window.lightboxNav = function(dir) {
+    currentIndex = (currentIndex + dir + photos.length) % photos.length;
+    buildLightbox(currentIndex);
+    // Also update the main gallery
+    const main = document.getElementById('galleryMain');
+    if (main) main.innerHTML = `<img src="${photos[currentIndex]}" alt="Property photo" onclick="openLightbox('${photos[currentIndex]}')" style="cursor:zoom-in;">`;
+  };
 
   const lb = document.createElement('div');
   lb.id = 'photoLightbox';
-  lb.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:500;display:flex;align-items:center;justify-content:center;cursor:zoom-out;padding:1rem;';
-  lb.innerHTML = `
-    <img src="${url}" alt="Property photo" style="max-width:100%;max-height:100vh;object-fit:contain;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,0.5);">
-    <button onclick="document.getElementById('photoLightbox').remove()" style="position:fixed;top:16px;right:16px;background:rgba(255,255,255,0.15);border:none;color:white;font-size:24px;width:44px;height:44px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
-  `;
-  lb.addEventListener('click', (e) => {
-    if (e.target === lb) lb.remove();
-  });
-  // Close on Escape
-  document.addEventListener('keydown', function escClose(e) {
-    if (e.key === 'Escape') { lb.remove(); document.removeEventListener('keydown', escClose); }
-  });
+  lb.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:500;display:flex;align-items:center;justify-content:center;padding:1rem;';
   document.body.appendChild(lb);
+  buildLightbox(currentIndex);
+
+  // Close on background click
+  lb.addEventListener('click', (e) => { if (e.target === lb) lb.remove(); });
+
+  // Keyboard navigation
+  function keyHandler(e) {
+    if (e.key === 'Escape') { lb.remove(); document.removeEventListener('keydown', keyHandler); }
+    if (e.key === 'ArrowRight') lightboxNav(1);
+    if (e.key === 'ArrowLeft') lightboxNav(-1);
+  }
+  document.addEventListener('keydown', keyHandler);
+
+  // Touch/swipe support
+  let touchStartX = 0;
+  lb.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+  lb.addEventListener('touchend', e => {
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) lightboxNav(diff > 0 ? 1 : -1);
+  });
 }
 
 function swapExplainer(pref) {
