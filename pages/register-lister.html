@@ -73,7 +73,17 @@
 
   <div class="container form-layout" style="max-width:780px">
 
-    <!-- PROGRESS STEPS -->
+    <!-- AUTH GATE — shown when not signed in -->
+    <div id="authGate" style="display:none;text-align:center;padding:3rem 1rem;">
+      <div style="font-size:48px;margin-bottom:1rem;">🔒</div>
+      <h2 style="font-size:1.5rem;font-weight:700;margin-bottom:0.75rem;">Sign in to list your home</h2>
+      <p style="font-size:15px;color:var(--text-mid);margin-bottom:1.5rem;max-width:420px;margin-left:auto;margin-right:auto;">You need a NestX account to list your property. Sign in or create an account to get started.</p>
+      <button class="btn btn-primary btn-lg" onclick="handleAuth()">Sign in or create account →</button>
+      <p style="font-size:13px;color:var(--text-muted);margin-top:1rem;">Already have an account? <a href="#" onclick="handleAuth()" style="color:var(--green);">Sign in here</a></p>
+    </div>
+
+    <!-- MAIN FORM — shown when signed in -->
+    <div id="listingForm">
     <div class="reg-steps">
       <div class="reg-step active" id="step-indicator-1">
         <div class="reg-step-num">1</div>
@@ -538,6 +548,8 @@
         <a href="dashboard.html" class="btn btn-primary btn-lg" style="margin-top:1.5rem">Go to my dashboard →</a>
       </div>
     </div>
+
+    </div> <!-- end #listingForm -->
 
   </div>
 
