@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────
-//  DASHBOARD — user's listings + incoming swap offers
+//  DASHBOARD — user's listings + offers
 // ─────────────────────────────────────────────────────────
 
 async function loadDashboard() {
@@ -18,93 +18,108 @@ async function loadDashboard() {
     return;
   }
 
+  const username = session.user.user_metadata?.username || session.user.user_metadata?.first_name || 'there';
+
   // Load listings
   const { data: listings, error: lErr } = await db
-    .from('listings')
-    .select('*')
-    .eq('user_id', session.user.id)
-    .eq('active', true)
+    .from('listings').select('*')
+    .eq('user_id', session.user.id).eq('active', true)
     .order('created_at', { ascending: false });
 
-  if (lErr) {
-    container.innerHTML = '<div class="empty-state"><p>Could not load your listings.</p></div>';
-    return;
-  }
+  if (lErr) { container.innerHTML = '<div class="empty-state"><p>Could not load your listings.</p></div>'; return; }
 
-  // Load offers RECEIVED on user's listings
+  // Load offers RECEIVED
   const listingIds = (listings || []).map(l => l.id);
   let offersReceived = [];
   if (listingIds.length > 0) {
-    const { data: offerData } = await db
-      .from('offers')
-      .select('*')
-      .in('listing_id', listingIds)
-      .order('created_at', { ascending: false });
-    offersReceived = offerData || [];
+    const { data } = await db.from('offers').select('*')
+      .in('listing_id', listingIds).order('created_at', { ascending: false });
+    offersReceived = data || [];
   }
 
-  // Load offers SENT by this user
-  const { data: offersSent } = await db
-    .from('offers')
+  // Load offers SENT
+  const { data: offersSent } = await db.from('offers')
     .select('*, listings(address, price, username, contact_name, contact_email, contact_phone)')
-    .eq('offerer_id', session.user.id)
-    .order('created_at', { ascending: false });
+    .eq('offerer_id', session.user.id).order('created_at', { ascending: false });
 
   const sentOffers = offersSent || [];
-  const openToChat = sentOffers.filter(o => o.status === 'open_to_chat');
-  const pendingOffers = offersReceived.filter(o => o.status === 'pending').length;
+
+  // Separate by type
+  const swapOffersReceived   = offersReceived.filter(o => o.offer_type !== 'purchase');
+  const purchaseOffersReceived = offersReceived.filter(o => o.offer_type === 'purchase');
+  const swapOffersSent       = sentOffers.filter(o => o.offer_type !== 'purchase');
+  const purchaseOffersSent   = sentOffers.filter(o => o.offer_type === 'purchase');
+  const openToChat           = sentOffers.filter(o => o.status === 'open_to_chat');
+  const pendingSwap          = swapOffersReceived.filter(o => o.status === 'pending').length;
+  const pendingPurchase      = purchaseOffersReceived.filter(o => o.status === 'pending').length;
 
   container.innerHTML = `
-    <div class="dashboard-stats">
-      <div class="stat-card">
-        <div class="stat-label">Active listings</div>
-        <div class="stat-value">${listings.length}</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Offers received</div>
-        <div class="stat-value">${offersReceived.length}</div>
-        <div class="stat-sub">${pendingOffers} pending</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Offers sent</div>
-        <div class="stat-value">${sentOffers.length}</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Open to chat</div>
-        <div class="stat-value" style="color:${openToChat.length > 0 ? 'var(--green)' : 'var(--text)'}">${openToChat.length}</div>
+
+    <!-- WELCOME HEADER -->
+    <div style="background:linear-gradient(135deg,#0F6E56 0%,#085041 100%);border-radius:16px;padding:1.75rem 2rem;margin-bottom:2rem;color:white;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+        <div>
+          <h2 style="font-size:1.5rem;font-weight:700;margin-bottom:4px;">Welcome back, ${username} 👋</h2>
+          <p style="font-size:14px;opacity:0.8;margin:0;">Here's what's happening with your listings</p>
+        </div>
+        <a href="register-lister.html" class="btn" style="background:white;color:#0F6E56;font-weight:600;border:none;">+ List another home</a>
       </div>
     </div>
 
-    <div class="dashboard-section">
-      <div class="dashboard-section-header">
-        <h2>Your listings</h2>
-        <a href="register-lister.html" class="btn btn-primary">+ List a home</a>
-      </div>
-      ${renderMyListings(listings)}
+    <!-- STATS GRID -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:2rem;">
+      ${statCard('🏡', 'Active listings', listings.length, '')}
+      ${statCard('🔄', 'Swap offers in', swapOffersReceived.length, pendingSwap > 0 ? `${pendingSwap} pending` : '')}
+      ${statCard('💰', 'Purchase offers in', purchaseOffersReceived.length, pendingPurchase > 0 ? `${pendingPurchase} pending` : '')}
+      ${statCard('📤', 'Offers sent', sentOffers.length, '')}
+      ${openToChat.length > 0 ? statCard('💬', 'Open to chat', openToChat.length, 'Action needed', '#0F6E56') : statCard('💬', 'Open to chat', 0, '')}
     </div>
 
-    <div class="dashboard-section">
-      <div class="dashboard-section-header">
-        <h2>Swap offers received</h2>
-      </div>
-      ${renderOffers(offersReceived, listings)}
+    <!-- TABS -->
+    <div style="display:flex;gap:0;border:1px solid var(--border);border-radius:10px;overflow:hidden;width:fit-content;margin-bottom:1.5rem;flex-wrap:wrap;">
+      ${tabBtn('tab-listings', 'My listings', true)}
+      ${tabBtn('tab-swap-in', `Swap offers in ${pendingSwap > 0 ? `<span style="background:#dc2626;color:white;font-size:10px;padding:1px 5px;border-radius:10px;margin-left:4px;">${pendingSwap}</span>` : ''}`)}
+      ${tabBtn('tab-purchase-in', `Purchase offers in ${pendingPurchase > 0 ? `<span style="background:#dc2626;color:white;font-size:10px;padding:1px 5px;border-radius:10px;margin-left:4px;">${pendingPurchase}</span>` : ''}`)}
+      ${tabBtn('tab-offers-sent', 'Offers sent')}
+      ${openToChat.length > 0 ? tabBtn('tab-open', `💬 Open to chat <span style="background:#0F6E56;color:white;font-size:10px;padding:1px 5px;border-radius:10px;margin-left:4px;">${openToChat.length}</span>`) : ''}
     </div>
 
-    <div class="dashboard-section">
-      <div class="dashboard-section-header">
-        <h2>Swap offers sent</h2>
-      </div>
-      ${renderSentOffers(sentOffers)}
-    </div>
-
-    ${openToChat.length > 0 ? `
-    <div class="dashboard-section">
-      <div class="dashboard-section-header">
-        <h2>💬 Open to chat</h2>
-      </div>
-      ${renderOpenToChat(openToChat)}
-    </div>` : ''}
+    <div id="tab-listings" class="dash-tab active">${renderMyListings(listings)}</div>
+    <div id="tab-swap-in" class="dash-tab" style="display:none">${renderOffers(swapOffersReceived, listings, 'swap')}</div>
+    <div id="tab-purchase-in" class="dash-tab" style="display:none">${renderOffers(purchaseOffersReceived, listings, 'purchase')}</div>
+    <div id="tab-offers-sent" class="dash-tab" style="display:none">${renderSentOffers(sentOffers)}</div>
+    ${openToChat.length > 0 ? `<div id="tab-open" class="dash-tab" style="display:none">${renderOpenToChat(openToChat)}</div>` : ''}
   `;
+}
+
+function statCard(icon, label, value, sub, valueColor = '') {
+  return `
+    <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;">
+      <div style="font-size:22px;margin-bottom:6px;">${icon}</div>
+      <div style="font-size:24px;font-weight:700;color:${valueColor || 'var(--text)'};letter-spacing:-0.03em;">${value}</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${label}</div>
+      ${sub ? `<div style="font-size:11px;color:${valueColor || '#dc2626'};margin-top:2px;font-weight:500;">${sub}</div>` : ''}
+    </div>
+  `;
+}
+
+function tabBtn(id, label, active = false) {
+  return `<button onclick="showDashTab('${id}')" id="tbtn-${id}"
+    style="padding:8px 16px;font-size:13px;font-weight:500;border:none;background:${active ? '#0F6E56' : 'transparent'};color:${active ? 'white' : 'var(--text-mid)'};cursor:pointer;font-family:inherit;white-space:nowrap;">
+    ${label}
+  </button>`;
+}
+
+function showDashTab(id) {
+  document.querySelectorAll('.dash-tab').forEach(t => t.style.display = 'none');
+  document.querySelectorAll('[id^="tbtn-"]').forEach(b => {
+    b.style.background = 'transparent';
+    b.style.color = 'var(--text-mid)';
+  });
+  const tab = document.getElementById(id);
+  if (tab) tab.style.display = 'block';
+  const btn = document.getElementById('tbtn-' + id);
+  if (btn) { btn.style.background = '#0F6E56'; btn.style.color = 'white'; }
 }
 
 function renderMyListings(listings) {
@@ -141,33 +156,21 @@ function renderMyListings(listings) {
   }).join('');
 }
 
-function renderOffers(offers, listings) {
+function renderOffers(offers, listings, type = 'swap') {
+  const isPurchase = type === 'purchase';
   if (!offers || offers.length === 0) {
-    return `<div class="empty-state"><p>No swap offers yet. Share your listing to attract interest.</p></div>`;
+    return `<div class="empty-state"><p>No ${isPurchase ? 'purchase' : 'swap'} offers received yet.</p></div>`;
   }
 
   return offers.map(o => {
     const listing = listings.find(l => l.id === o.listing_id);
-    const diff = o.cash_diff;
-    const diffStr = diff > 0
-      ? `They pay you ${fmt(diff)}`
-      : diff < 0
-      ? `You pay them ${fmt(Math.abs(diff))}`
-      : 'Equal value swap';
+    const badgeClass = { pending: 'badge-pending', open_to_chat: 'badge-accepted', declined: 'badge-declined' }[o.status] || 'badge-pending';
+    const badgeLabel = { pending: 'Pending', open_to_chat: 'Open to chat', declined: 'Declined' }[o.status] || 'Pending';
 
-    const badgeClass = {
-      pending: 'badge-pending',
-      open_to_chat: 'badge-accepted',
-      declined: 'badge-declined'
-    }[o.status] || 'badge-pending';
+    const offerDetail = isPurchase
+      ? `Purchase offer of <strong>${fmt(o.offer_value)}</strong>`
+      : `Swap offer · ${fmt(o.offer_value)} estimated · ${o.cash_diff > 0 ? `They pay you ${fmt(o.cash_diff)}` : o.cash_diff < 0 ? `You pay them ${fmt(Math.abs(o.cash_diff))}` : 'Equal value'}`;
 
-    const badgeLabel = {
-      pending: 'Pending',
-      open_to_chat: 'Open to chat',
-      declined: 'Declined'
-    }[o.status] || 'Pending';
-
-    // Only show contact details when open to chat
     const contactInfo = o.status === 'open_to_chat'
       ? `<div class="offer-contact-revealed">
           <div style="font-size:12px;font-weight:600;color:var(--green-dark);margin-bottom:6px;">✅ Contact details shared</div>
@@ -187,11 +190,9 @@ function renderOffers(offers, listings) {
       <div class="offer-row" id="offer-${o.id}">
         <div class="offer-row-header">
           <div>
-            <div class="offer-address">${o.offer_address}</div>
-            <div class="offer-detail">
-              Estimated ${fmt(o.offer_value)} · ${diffStr}
-              ${listing ? ` · For your listing at ${listing.address}` : ''}
-            </div>
+            <div class="offer-address">${isPurchase ? '💰 Purchase offer' : `🔄 ${o.offer_address}`}</div>
+            <div class="offer-detail">${offerDetail}${listing ? ` · For: ${listing.address}` : ''}</div>
+            <div class="offer-detail" style="font-size:12px;color:var(--text-muted);">Received ${new Date(o.created_at).toLocaleDateString('en-NZ')}</div>
           </div>
           <span class="offer-badge ${badgeClass}">${badgeLabel}</span>
         </div>
@@ -205,28 +206,26 @@ function renderOffers(offers, listings) {
 
 function renderSentOffers(offers) {
   if (!offers || offers.length === 0) {
-    return `<div class="empty-state"><p>You haven't sent any swap offers yet.</p><a href="../browse.html" class="btn btn-outline">Browse homes</a></div>`;
+    return `<div class="empty-state"><p>You haven't sent any offers yet.</p><a href="../browse.html" class="btn btn-outline">Browse homes</a></div>`;
   }
 
   return offers.map(o => {
     const listing = o.listings;
-    const diff = o.cash_diff;
-    const diffStr = diff > 0
-      ? `You pay ${fmt(diff)}`
-      : diff < 0
-      ? `They pay ${fmt(Math.abs(diff))}`
-      : 'Equal value swap';
-
+    const isPurchase = o.offer_type === 'purchase';
     const badgeClass = { pending: 'badge-pending', open_to_chat: 'badge-accepted', declined: 'badge-declined' }[o.status] || 'badge-pending';
     const badgeLabel = { pending: 'Pending', open_to_chat: 'Open to chat', declined: 'Not interested' }[o.status] || 'Pending';
+
+    const offerDetail = isPurchase
+      ? `Purchase offer of ${fmt(o.offer_value)}`
+      : `Swap offer · ${fmt(o.offer_value)} estimated · ${o.cash_diff > 0 ? `You pay ${fmt(o.cash_diff)}` : o.cash_diff < 0 ? `They pay ${fmt(Math.abs(o.cash_diff))}` : 'Equal value'}`;
 
     return `
       <div class="offer-row">
         <div class="offer-row-header">
           <div>
-            <div class="offer-address">Your offer: ${o.offer_address}</div>
-            <div class="offer-detail">On: ${listing?.address || 'Listing removed'} · ${diffStr}</div>
-            <div class="offer-detail">Sent ${new Date(o.created_at).toLocaleDateString('en-NZ')}</div>
+            <div class="offer-address">${isPurchase ? '💰' : '🔄'} ${isPurchase ? 'Purchase offer' : o.offer_address}</div>
+            <div class="offer-detail">On: ${listing?.address || 'Listing removed'} · ${offerDetail}</div>
+            <div class="offer-detail" style="font-size:12px;color:var(--text-muted);">Sent ${new Date(o.created_at).toLocaleDateString('en-NZ')}</div>
           </div>
           <span class="offer-badge ${badgeClass}">${badgeLabel}</span>
         </div>
