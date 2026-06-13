@@ -105,18 +105,15 @@ async function enhanceDescription() {
   const prompt = `You are a NZ property copywriter. Rewrite the following property description in a ${toneInstructions[tone]} tone. Keep all factual details accurate. Write in 2-4 paragraphs. Do not add information that wasn't in the original. Output only the rewritten description, nothing else.\n\nOriginal description:\n${desc}`;
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('/api/enhance-description', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: prompt }]
-      })
+      body: JSON.stringify({ description: desc, tone })
     });
 
     const data = await response.json();
-    const enhanced = data.content?.[0]?.text || '';
+    if (data.error) throw new Error(data.error);
+    const enhanced = data.enhanced || '';
     if (!enhanced) throw new Error('No response');
 
     loadingText.style.display = 'none';
