@@ -519,3 +519,32 @@ function togglePoliceUpload() {
   const show = document.getElementById('policeCheck').checked;
   document.getElementById('policeUploadSection').style.display = show ? 'block' : 'none';
 }
+
+// ── AUTH GATE ──
+async function initListingAuth() {
+  const { data: { session } } = await db.auth.getSession();
+
+  const gate = document.getElementById('authGate');
+  const form = document.getElementById('listingForm');
+
+  if (!session) {
+    gate.style.display = 'block';
+    form.style.display = 'none';
+  } else {
+    gate.style.display = 'none';
+    form.style.display = 'block';
+  }
+
+  // Listen for sign in
+  db.auth.onAuthStateChange((_event, session) => {
+    if (session) {
+      gate.style.display = 'none';
+      form.style.display = 'block';
+    } else {
+      gate.style.display = 'block';
+      form.style.display = 'none';
+    }
+  });
+}
+
+initListingAuth();
