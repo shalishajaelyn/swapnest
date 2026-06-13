@@ -184,6 +184,13 @@ function calculateFee() {
   calcBox.style.display = 'block';
 }
 
+// ── PREMIUM UPGRADE ──
+function togglePremiumOptions() {
+  const checked = document.getElementById('addPremium').checked;
+  document.getElementById('premiumOptions').style.display = checked ? 'block' : 'none';
+  updatePaymentTotal();
+}
+
 // ── STEP NAVIGATION ──
 function goToStep(step) {
   document.querySelectorAll('.reg-step-content').forEach(el => el.style.display = 'none');
@@ -197,8 +204,15 @@ function goToStep(step) {
 
   if (step === 3) {
     mountCardElement();
-    document.getElementById('paymentFeeDisplay').textContent = '$' + currentFeeNZD.toLocaleString('en-NZ', {minimumFractionDigits:2, maximumFractionDigits:2});
-    document.getElementById('paymentTotalDisplay').textContent = '$' + currentFeeNZD.toLocaleString('en-NZ', {minimumFractionDigits:2, maximumFractionDigits:2});
+    const hasPremium = document.getElementById('addPremium')?.checked;
+    const premiumLine = document.getElementById('premiumFeeLine');
+    if (premiumLine) premiumLine.style.display = hasPremium ? 'flex' : 'none';
+    const baseFee = currentFeeNZD;
+    const totalFee = baseFee + (hasPremium ? 199 : 0);
+    const fmt2 = (n) => '$' + n.toLocaleString('en-NZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    document.getElementById('paymentFeeDisplay').textContent = fmt2(baseFee);
+    document.getElementById('paymentTotalDisplay').textContent = fmt2(totalFee);
+    currentFeeNZD = totalFee;
   }
 }
 
@@ -413,6 +427,9 @@ async function processPayment() {
       contact_email: document.getElementById('regEmail').value.trim(),
       contact_phone: document.getElementById('regPhone').value.trim() || null,
       username:      document.getElementById('username').value.trim(),
+      plan:          document.getElementById('addPremium')?.checked ? 'premium' : 'standard',
+      show_email:    document.getElementById('addPremium')?.checked && document.getElementById('showEmail')?.checked,
+      show_phone:    document.getElementById('addPremium')?.checked && document.getElementById('showPhone')?.checked,
       photos:        [],
       active:        false, // pending verification
       status:        'pending_verification',
