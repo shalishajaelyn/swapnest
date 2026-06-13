@@ -59,6 +59,9 @@ async function loadDashboard() {
   const pendingSwap     = swapOffersReceived.filter(o => o.status === 'pending').length;
   const pendingPurchase = purchaseOffersReceived.filter(o => o.status === 'pending').length;
 
+  // Pre-render open to chat HTML (was async, must be done before template literal)
+  const openToChatHtml = renderOpenToChat(openToChat, session.user.id);
+
   container.innerHTML = `
 
     <!-- WELCOME HEADER -->
@@ -91,7 +94,7 @@ async function loadDashboard() {
     <div id="tab-listings" class="dash-tab active">${renderMyListings(listings)}</div>
     <div id="tab-offers-in" class="dash-tab" style="display:none">${renderOffers([...swapOffersReceived, ...purchaseOffersReceived].sort((a,b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)), listings)}</div>
     <div id="tab-offers-sent" class="dash-tab" style="display:none">${renderSentOffers(sentOffers)}</div>
-    <div id="tab-open" class="dash-tab" style="display:none">${renderOpenToChat(openToChat)}</div>
+    <div id="tab-open" class="dash-tab" style="display:none">${openToChatHtml}</div>
   `;
 }
 
@@ -246,13 +249,10 @@ function renderSentOffers(offers) {
   }).join('');
 }
 
-async function renderOpenToChat(offers) {
+function renderOpenToChat(offers, userId) {
   if (!offers || offers.length === 0) {
     return `<div class="empty-state"><p>No open to chat conversations yet. When a seller accepts your offer, they'll appear here.</p></div>`;
   }
-
-  const { data: { session } } = await db.auth.getSession();
-  const userId = session?.user?.id;
 
   return `
     <div style="background:var(--green-light);border:1px solid var(--green-mid);border-radius:var(--radius-lg);padding:1.25rem 1.5rem;margin-bottom:1rem;">
@@ -263,8 +263,6 @@ async function renderOpenToChat(offers) {
     ${offers.map(o => {
       const isSeller = o.listing_owner === userId;
       const listing = o.listings;
-
-      // Seller sees offerer details, buyer sees seller details
       const contactName  = isSeller ? (o.offerer_first_name || '—') : (listing?.contact_name || '—');
       const contactEmail = isSeller ? o.offerer_email : listing?.contact_email;
       const contactPhone = isSeller ? o.offerer_phone : listing?.contact_phone;
@@ -276,7 +274,7 @@ async function renderOpenToChat(offers) {
           <div class="offer-row-header">
             <div>
               <div class="offer-address">${offerLabel}</div>
-              <div class="offer-detail">Property: ${isSeller ? (o.listing_id ? 'your listing' : '—') : (listing?.address || '—')}</div>
+              <div class="offer-detail">Property: ${isSeller ? 'your listing' : (listing?.address || '—')}</div>
             </div>
             <span class="offer-badge badge-accepted">Open to chat</span>
           </div>
