@@ -132,6 +132,7 @@ function renderMyListings(listings) {
         </div>
         <div class="my-listing-actions">
           <a href="listing.html?id=${l.id}" class="btn btn-outline">View</a>
+          ${l.plan !== 'premium' ? `<button class="btn btn-warning" onclick="upgradeToPremium('${l.id}')">👑 Upgrade to Premium</button>` : '<span class="tag tag-premium" style="padding:8px 12px;">👑 Premium</span>'}
           <button class="btn btn-primary" onclick="markAsSold('${l.id}', '${l.address}', '${l.stripe_subscription_id || ''}')">🎉 Mark as sold</button>
           <button class="btn btn-danger" onclick="removeListing('${l.id}', '${l.stripe_subscription_id || ''}')">Remove</button>
         </div>
@@ -325,6 +326,14 @@ async function respondToOffer(offerId, status, offererEmail, offererFirstName) {
   }
 
   setTimeout(() => loadDashboard(), 600);
+}
+
+async function upgradeToPremium(listingId) {
+  const { data: { session } } = await db.auth.getSession();
+  if (!session) { showToast('Please sign in first'); return; }
+
+  // Redirect to upgrade page with listing ID
+  window.location.href = `premium-upgrade.html?listing=${listingId}`;
 }
 
 async function markAsSold(id, address, subscriptionId) {
