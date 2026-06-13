@@ -41,7 +41,7 @@ async function renderListing(l) {
 
   const photos = l.photos && l.photos.length > 0 ? l.photos : null;
   const coverPhoto = photos
-    ? `<img src="${photos[0]}" alt="Photo of ${l.address}">`
+    ? `<img src="${photos[0]}" alt="Photo of ${l.address}" onclick="openLightbox('${photos[0]}')" style="cursor:zoom-in;">`
     : `<span style="font-size:72px">🏡</span>`;
 
   const thumbs = photos && photos.length > 1
@@ -173,9 +173,30 @@ async function checkOwnership(ownerId) {
 
 function switchPhoto(url, thumbEl) {
   const main = document.getElementById('galleryMain');
-  if (main) main.innerHTML = `<img src="${url}" alt="Property photo">`;
+  if (main) main.innerHTML = `<img src="${url}" alt="Property photo" onclick="openLightbox('${url}')" style="cursor:zoom-in;">`;
   document.querySelectorAll('.gallery-thumb').forEach(t => t.classList.remove('active'));
   if (thumbEl) thumbEl.classList.add('active');
+}
+
+function openLightbox(url) {
+  // Remove existing lightbox
+  document.getElementById('photoLightbox')?.remove();
+
+  const lb = document.createElement('div');
+  lb.id = 'photoLightbox';
+  lb.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:500;display:flex;align-items:center;justify-content:center;cursor:zoom-out;padding:1rem;';
+  lb.innerHTML = `
+    <img src="${url}" alt="Property photo" style="max-width:100%;max-height:100vh;object-fit:contain;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+    <button onclick="document.getElementById('photoLightbox').remove()" style="position:fixed;top:16px;right:16px;background:rgba(255,255,255,0.15);border:none;color:white;font-size:24px;width:44px;height:44px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+  `;
+  lb.addEventListener('click', (e) => {
+    if (e.target === lb) lb.remove();
+  });
+  // Close on Escape
+  document.addEventListener('keydown', function escClose(e) {
+    if (e.key === 'Escape') { lb.remove(); document.removeEventListener('keydown', escClose); }
+  });
+  document.body.appendChild(lb);
 }
 
 function swapExplainer(pref) {
@@ -205,6 +226,23 @@ let currentOfferType = 'swap';
 
 async function openOfferModal(type = 'swap') {
   currentOfferType = type;
+
+  // Check if user already has an active offer on this listing
+  const { data: { session } } = await db.auth.getSession();
+  if (session) {
+    const { data: existingOffers } = await db.from('offers')
+      .select('id, status, offer_type')
+      .eq('listing_id', currentListing.id)
+      .eq('offerer_id', session.user.id)
+      .in('status', ['pending', 'open_to_chat']);
+
+    if (existingOffers && existingOffers.length > 0) {
+      const existing = existingOffers[0];
+      const statusLabel = existing.status === 'open_to_chat' ? 'open to chat' : 'pending';
+      showToast(`You already have a ${statusLabel} ${existing.offer_type || 'swap'} offer on this listing.`);
+      return;
+    }
+  }
   const modal = document.getElementById('offerModal');
   const info = document.getElementById('offerTargetInfo');
   const swapFields = document.getElementById('swapOnlyFields');
