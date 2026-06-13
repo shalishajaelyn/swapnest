@@ -32,7 +32,8 @@ async function loadDashboard() {
   const listingIds = (listings || []).map(l => l.id);
   let offersReceived = [];
   if (listingIds.length > 0) {
-    const { data } = await db.from('offers').select('*')
+    const { data } = await db.from('offers')
+      .select('*, listings(address, price, username, contact_name, contact_email, contact_phone)')
       .in('listing_id', listingIds).order('created_at', { ascending: false });
     offersReceived = data || [];
   }
@@ -45,13 +46,18 @@ async function loadDashboard() {
   const sentOffers = offersSent || [];
 
   // Separate by type
-  const swapOffersReceived   = offersReceived.filter(o => o.offer_type !== 'purchase');
+  const swapOffersReceived     = offersReceived.filter(o => o.offer_type !== 'purchase');
   const purchaseOffersReceived = offersReceived.filter(o => o.offer_type === 'purchase');
-  const swapOffersSent       = sentOffers.filter(o => o.offer_type !== 'purchase');
-  const purchaseOffersSent   = sentOffers.filter(o => o.offer_type === 'purchase');
-  const openToChat           = sentOffers.filter(o => o.status === 'open_to_chat');
-  const pendingSwap          = swapOffersReceived.filter(o => o.status === 'pending').length;
-  const pendingPurchase      = purchaseOffersReceived.filter(o => o.status === 'pending').length;
+  const swapOffersSent         = sentOffers.filter(o => o.offer_type !== 'purchase');
+  const purchaseOffersSent     = sentOffers.filter(o => o.offer_type === 'purchase');
+
+  // Open to chat: offers SENT where seller accepted + offers RECEIVED where you accepted
+  const openToChatSent     = sentOffers.filter(o => o.status === 'open_to_chat');
+  const openToChatReceived = offersReceived.filter(o => o.status === 'open_to_chat');
+  const openToChat         = [...openToChatReceived, ...openToChatSent];
+
+  const pendingSwap     = swapOffersReceived.filter(o => o.status === 'pending').length;
+  const pendingPurchase = purchaseOffersReceived.filter(o => o.status === 'pending').length;
 
   container.innerHTML = `
 
@@ -83,7 +89,7 @@ async function loadDashboard() {
     </div>
 
     <div id="tab-listings" class="dash-tab active">${renderMyListings(listings)}</div>
-    <div id="tab-offers-in" class="dash-tab" style="display:none">${renderOffers([...swapOffersReceived, ...purchaseOffersReceived].sort((a,b) => new Date(b.created_at) - new Date(a.created_at)), listings)}</div>
+    <div id="tab-offers-in" class="dash-tab" style="display:none">${renderOffers([...swapOffersReceived, ...purchaseOffersReceived].sort((a,b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)), listings)}</div>
     <div id="tab-offers-sent" class="dash-tab" style="display:none">${renderSentOffers(sentOffers)}</div>
     <div id="tab-open" class="dash-tab" style="display:none">${renderOpenToChat(openToChat)}</div>
   `;
@@ -240,33 +246,45 @@ function renderSentOffers(offers) {
   }).join('');
 }
 
-function renderOpenToChat(offers) {
+async function renderOpenToChat(offers) {
   if (!offers || offers.length === 0) {
     return `<div class="empty-state"><p>No open to chat conversations yet. When a seller accepts your offer, they'll appear here.</p></div>`;
   }
 
+  const { data: { session } } = await db.auth.getSession();
+  const userId = session?.user?.id;
+
   return `
     <div style="background:var(--green-light);border:1px solid var(--green-mid);border-radius:var(--radius-lg);padding:1.25rem 1.5rem;margin-bottom:1rem;">
       <p style="font-size:14px;color:var(--green-dark);margin:0;">
-        💬 <strong>You're open to chat!</strong> Contact details have been shared. Reach out directly to discuss the swap. Remember — this is not a binding commitment. Engage a conveyancer when ready to proceed formally.
+        💬 <strong>You're open to chat!</strong> Contact details have been shared. Reach out directly to discuss further. Remember — this is not a binding commitment. Engage a conveyancer when ready to proceed formally.
       </p>
     </div>
     ${offers.map(o => {
+      const isSeller = o.listing_owner === userId;
       const listing = o.listings;
+
+      // Seller sees offerer details, buyer sees seller details
+      const contactName  = isSeller ? (o.offerer_first_name || '—') : (listing?.contact_name || '—');
+      const contactEmail = isSeller ? o.offerer_email : listing?.contact_email;
+      const contactPhone = isSeller ? o.offerer_phone : listing?.contact_phone;
+      const role         = isSeller ? 'Buyer' : 'Seller';
+      const offerLabel   = o.offer_type === 'purchase' ? '💰 Purchase offer' : `🔄 Swap — ${o.offer_address || ''}`;
+
       return `
         <div class="offer-row">
           <div class="offer-row-header">
             <div>
-              <div class="offer-address">Your offer: ${o.offer_address}</div>
-              <div class="offer-detail">For: ${listing?.address || '—'}</div>
+              <div class="offer-address">${offerLabel}</div>
+              <div class="offer-detail">Property: ${isSeller ? (o.listing_id ? 'your listing' : '—') : (listing?.address || '—')}</div>
             </div>
             <span class="offer-badge badge-accepted">Open to chat</span>
           </div>
           <div class="offer-contact-revealed" style="margin-top:8px;">
-            <div style="font-size:12px;font-weight:600;color:var(--green-dark);margin-bottom:6px;">✅ Seller contact details</div>
-            <div class="offer-detail">First name: <strong>${listing?.contact_name || '—'}</strong></div>
-            <div class="offer-detail">Email: <strong><a href="mailto:${listing?.contact_email}" style="color:var(--green)">${listing?.contact_email || '—'}</a></strong></div>
-            ${listing?.contact_phone ? `<div class="offer-detail">Phone: <strong><a href="tel:${listing.contact_phone}" style="color:var(--green)">${listing.contact_phone}</a></strong></div>` : ''}
+            <div style="font-size:12px;font-weight:600;color:var(--green-dark);margin-bottom:6px;">✅ ${role} contact details</div>
+            <div class="offer-detail">First name: <strong>${contactName}</strong></div>
+            <div class="offer-detail">Email: <strong><a href="mailto:${contactEmail}" style="color:var(--green)">${contactEmail || '—'}</a></strong></div>
+            ${contactPhone ? `<div class="offer-detail">Phone: <strong><a href="tel:${contactPhone}" style="color:var(--green)">${contactPhone}</a></strong></div>` : ''}
           </div>
           <div style="margin-top:10px;font-size:13px;color:var(--text-muted)">
             <a href="conveyancers.html" style="color:var(--green);">Find a conveyancer →</a> when you're ready to proceed formally.
