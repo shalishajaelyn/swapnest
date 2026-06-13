@@ -207,12 +207,12 @@ function goToStep(step) {
     const hasPremium = document.getElementById('addPremium')?.checked;
     const premiumLine = document.getElementById('premiumFeeLine');
     if (premiumLine) premiumLine.style.display = hasPremium ? 'flex' : 'none';
-    const baseFee = currentFeeNZD;
-    const totalFee = baseFee + (hasPremium ? 199 : 0);
+    const premiumFee = hasPremium ? 199 : 0;
     const fmt2 = (n) => '$' + n.toLocaleString('en-NZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    document.getElementById('paymentFeeDisplay').textContent = fmt2(baseFee);
-    document.getElementById('paymentTotalDisplay').textContent = fmt2(totalFee);
-    currentFeeNZD = totalFee;
+    document.getElementById('paymentFeeDisplay').textContent = fmt2(currentFeeNZD);
+    document.getElementById('paymentTotalDisplay').textContent = fmt2(currentFeeNZD + premiumFee);
+    // Store premium fee separately so discount doesn't affect it
+    window._premiumFee = premiumFee;
   }
 }
 
@@ -256,24 +256,27 @@ function applyDiscount() {
 
 function updatePaymentTotal() {
   if (!currentFeeNZD) return;
-  let finalFee = currentFeeNZD;
+  const premiumFee = window._premiumFee || 0;
+  let discountedRegFee = currentFeeNZD;
 
   if (appliedDiscount) {
     if (appliedDiscount.type === 'percent') {
-      finalFee = currentFeeNZD * (1 - appliedDiscount.value / 100);
+      discountedRegFee = currentFeeNZD * (1 - appliedDiscount.value / 100);
     } else {
-      finalFee = Math.max(0, currentFeeNZD - appliedDiscount.value);
+      discountedRegFee = Math.max(0, currentFeeNZD - appliedDiscount.value);
     }
   }
 
-  // Minimum $1 to avoid Stripe errors
-  finalFee = Math.max(1, finalFee);
+  // Minimum $1 on registration fee to avoid Stripe errors
+  discountedRegFee = Math.max(1, discountedRegFee);
 
-  const fmt = (n) => '$' + n.toLocaleString('en-NZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  document.getElementById('paymentTotalDisplay').textContent = fmt(finalFee);
+  const finalTotal = discountedRegFee + premiumFee;
+  const fmt2 = (n) => '$' + n.toLocaleString('en-NZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  document.getElementById('paymentFeeDisplay').textContent = fmt2(discountedRegFee);
+  document.getElementById('paymentTotalDisplay').textContent = fmt2(finalTotal);
 
-  // Update the actual charge amount
-  currentFeeNZD = finalFee;
+  // Update charge amount — registration fee (discounted) + premium (full price)
+  currentFeeNZD = finalTotal;
 }
 
 // ── STEP 1 VALIDATION ──
