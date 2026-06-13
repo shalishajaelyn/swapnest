@@ -428,6 +428,28 @@
           <label>Preferred swap location</label>
           <input type="text" id="propSwapLocation" placeholder="e.g. Wellington region, open to NZ-wide">
         </div>
+
+        <!-- PREMIUM UPGRADE -->
+        <div class="premium-upgrade-card">
+          <h3>👑 Upgrade to Premium — $199</h3>
+          <p>Premium listings accept both swap offers and direct purchase offers, and can display your contact details publicly so buyers outside NestX can reach you directly.</p>
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:12px;">
+            <input type="checkbox" id="addPremium" style="accent-color:#92400e;width:16px;height:16px;" onchange="togglePremiumOptions()">
+            <span style="font-size:14px;font-weight:500;color:#92400e;">Add Premium upgrade ($199)</span>
+          </label>
+          <div id="premiumOptions" style="display:none;border-top:1px solid #fde68a;padding-top:12px;margin-top:4px;">
+            <p style="font-size:13px;color:#78350f;margin-bottom:10px;line-height:1.6;">Premium gives you the option to display your contact details directly on your listing — so people outside NestX, like first home buyers browsing without an account, can reach you directly. It's entirely your choice what you share.</p>
+            <p style="font-size:13px;font-weight:600;color:#78350f;margin-bottom:8px;">Choose what to show publicly:</p>
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#78350f;margin-bottom:8px;cursor:pointer;">
+              <input type="checkbox" id="showEmail" style="accent-color:#92400e;">
+              Show my email address publicly
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#78350f;cursor:pointer;">
+              <input type="checkbox" id="showPhone" style="accent-color:#92400e;">
+              Show my phone number publicly
+            </label>
+          </div>
+        </div>
       </div>
 
       <div id="step2Error" class="form-error" style="display:none;margin-top:1rem"></div>
@@ -450,6 +472,10 @@
               <span>Registration fee (0.1% of RV)</span>
               <span id="paymentFeeDisplay">—</span>
             </div>
+            <div class="fee-line" id="premiumFeeLine" style="display:none">
+              <span>👑 Premium upgrade</span>
+              <span>$199.00</span>
+            </div>
             <div class="fee-line" style="font-size:12px;color:var(--text-muted)">
               <span>GST inclusive</span>
               <span>15% GST included</span>
@@ -457,8 +483,6 @@
             <div class="fee-line fee-included">
               <span>✅ One-off registration fee</span>
               <span>No monthly fees ever</span>
-            </div>
-            <div class="fee-line fee-included">
             </div>
             <div class="fee-line fee-total">
               <span>Due today</span>
