@@ -51,6 +51,10 @@ function buildCardHTML(listing) {
     ? `<img src="${listing.photos[0]}" alt="Photo of ${listing.address}" loading="lazy">`
     : `<span>${listing.emoji || '🏡'}</span>`;
 
+  const premiumBadge = listing.plan === 'premium'
+    ? `<span class="tag tag-premium">👑 Premium</span>`
+    : '';
+
   return `
     <a href="pages/listing.html?id=${listing.id}" class="listing-card">
       <div class="card-img">${coverPhoto}</div>
@@ -65,6 +69,7 @@ function buildCardHTML(listing) {
         <div class="card-tags">
           <span class="tag tag-swap">Swap ready</span>
           <span class="tag ${swapTagClass(listing.swap_pref)}">${swapLabel(listing.swap_pref)}</span>
+          ${premiumBadge}
         </div>
       </div>
     </a>
