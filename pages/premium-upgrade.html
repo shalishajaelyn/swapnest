@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>👑 Premium Upgrade — NestX</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="../index.html" class="logo">NestX</a>
+    <div class="nav-links">
+      <a href="../browse.html">Browse homes</a>
+      <a href="about.html">About</a>
+      <a href="conveyancers.html">Conveyancers</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="dashboard.html" id="myListingsLink">My listings</a>
+      <span id="userEmail" class="user-email"></span>
+      <button id="authBtn" class="btn btn-outline" onclick="handleAuth()">Sign in</button>
+    </div>
+    <button class="hamburger" onclick="toggleMenu()">&#9776;</button>
+  </nav>
+
+  <div class="disclaimer-banner">
+    <div class="container">
+      ⚖️ NestX is a private listing platform only. We are <strong>not a licensed real estate agent</strong> and do not provide property advice.
+    </div>
+  </div>
+
+  <div class="container form-layout" style="max-width:580px;padding-top:3rem;padding-bottom:4rem;">
+
+    <div class="form-card">
+      <div style="text-align:center;margin-bottom:1.5rem;">
+        <div style="font-size:48px;margin-bottom:0.5rem;">👑</div>
+        <h1 style="font-size:1.75rem;font-weight:700;letter-spacing:-0.03em;margin-bottom:0.5rem;">Upgrade to Premium</h1>
+        <p style="color:var(--text-mid);font-size:15px;">One-off upgrade — no recurring fees</p>
+      </div>
+
+      <div class="premium-upgrade-card" style="margin-bottom:1.5rem;">
+        <h3 style="margin-bottom:10px;">What you get with Premium:</h3>
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:14px;color:#78350f;">
+          <div>🔄 <strong>Swap offers</strong> — already included</div>
+          <div>💰 <strong>Purchase offers</strong> — unlocked with Premium</div>
+          <div>📬 <strong>Show contact details publicly</strong> — reach buyers outside NestX</div>
+          <div>👑 <strong>Premium badge</strong> — stand out on browse page</div>
+        </div>
+      </div>
+
+      <!-- CONTACT VISIBILITY OPTIONS -->
+      <div class="form-card" style="background:var(--surface);margin-bottom:1.5rem;">
+        <h3 style="font-size:15px;font-weight:600;margin-bottom:6px;">What would you like to show publicly?</h3>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:12px;line-height:1.6;">Premium gives you the option to display your email and/or phone number directly on your listing. This means people outside NestX — such as first home buyers browsing the site without an account — can contact you directly without needing to sign up. It's entirely your choice what you share.</p>
+        <label style="display:flex;align-items:center;gap:8px;font-size:14px;margin-bottom:10px;cursor:pointer;">
+          <input type="checkbox" id="showEmail" style="accent-color:#92400e;width:16px;height:16px;">
+          Show my email address on my listing
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;">
+          <input type="checkbox" id="showPhone" style="accent-color:#92400e;width:16px;height:16px;">
+          Show my phone number on my listing
+        </label>
+        <p style="font-size:12px;color:var(--text-muted);margin-top:10px;">These details will be visible to everyone browsing NestX — including people without an account.</p>
+      </div>
+
+      <!-- ORDER SUMMARY -->
+      <div class="fee-calculator" style="margin-bottom:1.5rem;">
+        <div class="fee-calc-header"><span>📊 Order summary</span></div>
+        <div class="fee-calc-body">
+          <div class="fee-line">
+            <span>👑 Premium upgrade</span>
+            <span>$199.00</span>
+          </div>
+          <div class="fee-line" style="font-size:12px;color:var(--text-muted)">
+            <span>GST inclusive</span>
+            <span>15% GST included</span>
+          </div>
+          <div class="fee-line fee-total">
+            <span>Due today</span>
+            <span>$199.00 NZD</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD ELEMENT -->
+      <div class="form-row">
+        <label>Card details <span class="req">*</span></label>
+        <div id="cardElement" class="stripe-card-element"></div>
+        <div id="cardError" class="form-error" style="display:none;margin-top:6px;"></div>
+      </div>
+
+      <div id="upgradeError" class="form-error" style="display:none;margin-bottom:1rem;"></div>
+
+      <button class="btn btn-primary btn-lg btn-full" id="upgradeBtn" onclick="processPremiumUpgrade()">
+        👑 Pay $199 and upgrade to Premium
+      </button>
+
+      <p style="font-size:12px;color:var(--text-muted);text-align:center;margin-top:0.75rem;">
+        One-off payment. No recurring fees. Access until listing is removed or property sold.
+      </p>
+    </div>
+
+  </div>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <span class="logo">NestX</span>
+        <p>New Zealand's verified private home swap marketplace.</p>
+      </div>
+      <div class="footer-links">
+        <a href="../browse.html">Browse</a>
+        <a href="about.html">About</a>
+        <a href="pricing.html">Pricing</a>
+        <a href="mailto:hello@nestx.co.nz">Contact</a>
+      </div>
+      <p class="footer-disclaimer">⚖️ NestX is a private listing platform only. We are not a licensed real estate agent and do not provide property advice.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase.js"></script>
+  <script src="../js/auth.js"></script>
+  <script>
+    const STRIPE_PUBLISHABLE_KEY = 'pk_test_51TgiMJB46FzEUxbhqo1JzrsUSP7F5M5Yq1DFILvKtmRhk5kKreKhAcPCe7HlzkNC1yyKxExYOGqUcELCRTz0ZCro007xyo8Xmw';
+    let stripe, elements, cardElement, listingId;
+
+    // Get listing ID from URL
+    const params = new URLSearchParams(window.location.search);
+    listingId = params.get('listing');
+    if (!listingId) window.location.href = 'dashboard.html';
+
+    window.addEventListener('load', () => {
+      stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
+      elements = stripe.elements();
+      cardElement = elements.create('card', {
+        style: {
+          base: { fontSize: '15px', color: '#1a1a18', fontFamily: '-apple-system, sans-serif' }
+        }
+      });
+      cardElement.mount('#cardElement');
+      cardElement.on('change', e => {
+        const errEl = document.getElementById('cardError');
+        errEl.textContent = e.error ? e.error.message : '';
+        errEl.style.display = e.error ? 'block' : 'none';
+      });
+    });
+
+    async function processPremiumUpgrade() {
+      const btn = document.getElementById('upgradeBtn');
+      const errEl = document.getElementById('upgradeError');
+      errEl.style.display = 'none';
+      btn.disabled = true;
+      btn.textContent = 'Processing…';
+
+      try {
+        const { data: { session } } = await db.auth.getSession();
+        if (!session) throw new Error('Please sign in to upgrade');
+
+        // Create payment intent
+        const intentRes = await fetch('/api/create-upgrade-intent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: session.user.email,
+            userId: session.user.id,
+            listingId
+          })
+        });
+        const intentData = await intentRes.json();
+        if (intentData.error) throw new Error(intentData.error);
+
+        // Confirm payment
+        const { paymentIntent, error } = await stripe.confirmCardPayment(intentData.clientSecret, {
+          payment_method: { card: cardElement }
+        });
+
+        if (error) throw new Error(error.message);
+        if (paymentIntent.status !== 'succeeded') throw new Error('Payment failed');
+
+        // Update listing to premium
+        const showEmail = document.getElementById('showEmail').checked;
+        const showPhone = document.getElementById('showPhone').checked;
+
+        const { error: dbError } = await db.from('listings').update({
+          plan: 'premium',
+          show_email: showEmail,
+          show_phone: showPhone
+        }).eq('id', listingId).eq('user_id', session.user.id);
+
+        if (dbError) throw new Error('Payment succeeded but upgrade failed — contact hello@nestx.co.nz');
+
+        // Redirect to dashboard
+        window.location.href = 'dashboard.html?upgraded=1';
+
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = '👑 Pay $199 and upgrade to Premium';
+      }
+    }
+  </script>
+</body>
+</html>
