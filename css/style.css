@@ -2,10 +2,10 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --green:        #1B6B3A;
-  --green-dark:   #145230;
-  --green-light:  #e8f5ed;
-  --green-mid:    #7bbf95;
+  --green:        #2ecc71;
+  --green-dark:   #27ae60;
+  --green-light:  #eafaf1;
+  --green-mid:    #82e0aa;
   --navy:         #1a1a2e;
   --cream:        #f5f0e8;
   --cream-dark:   #ede5d8;
