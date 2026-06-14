@@ -3,15 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Conveyancer Registration — Nest X</title>
+  <title>List Your Home — NestX</title>
   <link rel="stylesheet" href="../css/style.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://js.stripe.com/v3/"></script>
 </head>
 <body>
 
   <nav class="navbar">
-    <a href="../index.html" class="logo">Nest<span>X</span></a>
+    <a href="../index.html" class="logo"><img src="https://dacpuhfkuprqqaqoxwll.supabase.co/storage/v1/object/public/assets/Birdhouse%20Logo.png" alt="NestX logo">NestX</a>
     <div class="nav-links">
       <a href="../browse.html">Browse homes</a>
       <a href="about.html">About</a>
@@ -25,281 +24,563 @@
 
   <div class="disclaimer-banner">
     <div class="container">
-      ⚖️ Nest X is a private listing platform only. We are <strong>not a licensed real estate agent</strong> and do not provide property advice. Conveyancer listings are for directory purposes only.
+      <strong>Match. Swap. Move.</strong> — New Zealand's first private home swap marketplace
     </div>
   </div>
 
   <div class="page-header">
     <div class="container">
-      <h1>Join the Nest X conveyancer directory</h1>
-      <p>Connect with NZ homeowners looking to swap or sell privately</p>
+      <h1>List your home on NestX</h1>
+      <p>One registration fee. No commission. Keep 100% of your profit.</p>
     </div>
   </div>
 
-  <!-- BENEFITS -->
+  <!-- PROFIT HIGHLIGHT -->
   <div class="profit-banner">
     <div class="container">
       <div class="profit-banner-inner">
         <div class="profit-stat">
-          <span class="profit-icon">🆓</span>
+          <span class="profit-icon">💰</span>
           <div>
-            <strong>First month free</strong>
-            <span>No credit card required to start</span>
+            <strong>No agent needed</strong>
+            <span>Deal directly — keep all your profit</span>
           </div>
         </div>
         <div class="profit-stat">
-          <span class="profit-icon">💵</span>
+          <span class="profit-icon">🔄</span>
           <div>
-            <strong>$40/month thereafter</strong>
-            <span>Cancel anytime</span>
+            <strong>Swap or sell</strong>
+            <span>Upgrade anytime for $199</span>
           </div>
         </div>
         <div class="profit-stat">
-          <span class="profit-icon">🏡</span>
+          <span class="profit-icon">📅</span>
           <div>
-            <strong>Swap-ready clients</strong>
-            <span>Simultaneous settlements</span>
+            <strong>One-off fee</strong>
+            <span>No monthly fees</span>
           </div>
         </div>
         <div class="profit-stat">
           <span class="profit-icon">✅</span>
           <div>
-            <strong>Verified directory</strong>
-            <span>Manually approved listings</span>
+            <strong>No relisting fees</strong>
+            <span>Permanent listing — no relisting fees</span>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="container form-layout" style="max-width:680px">
+  <div class="container form-layout" style="max-width:780px">
 
-    <div class="conv-reg-notice">
-      <h3>Important — please read</h3>
-      <p>Nest X provides a directory of conveyancers as a convenience to our users only. We do not endorse or recommend any conveyancer. Users contact and engage conveyancers directly and independently. Nest X receives no referral fees and takes no responsibility for services provided. All listings are manually reviewed before going live.</p>
+    <!-- AUTH GATE — shown when not signed in -->
+    <div id="authGate" style="display:none;text-align:center;padding:3rem 1rem;">
+      <div style="font-size:48px;margin-bottom:1rem;">🔒</div>
+      <h2 style="font-size:1.5rem;font-weight:700;margin-bottom:0.75rem;">Sign in to list your home</h2>
+      <p style="font-size:15px;color:var(--text-mid);margin-bottom:1.5rem;max-width:420px;margin-left:auto;margin-right:auto;">You need a NestX account to list your property. Sign in or create an account to get started.</p>
+      <button class="btn btn-primary btn-lg" onclick="handleAuth()">Sign in or create account →</button>
+      <p style="font-size:13px;color:var(--text-muted);margin-top:1rem;">Already have an account? <a href="#" onclick="handleAuth()" style="color:var(--green);">Sign in here</a></p>
     </div>
 
-    <form id="convRegForm" class="listing-form">
+    <!-- MAIN FORM — shown when signed in -->
+    <div id="listingForm">
+    <div class="reg-steps">
+      <div class="reg-step active" id="step-indicator-1">
+        <div class="reg-step-num">1</div>
+        <span>Your details</span>
+      </div>
+      <div class="reg-step-line"></div>
+      <div class="reg-step" id="step-indicator-2">
+        <div class="reg-step-num">2</div>
+        <span>Your property</span>
+      </div>
+      <div class="reg-step-line"></div>
+      <div class="reg-step" id="step-indicator-3">
+        <div class="reg-step-num">3</div>
+        <span>Payment</span>
+      </div>
+      <div class="reg-step-line"></div>
+      <div class="reg-step" id="step-indicator-4">
+        <div class="reg-step-num">4</div>
+        <span>Verification</span>
+      </div>
+    </div>
 
+    <!-- STEP 1: ACCOUNT DETAILS -->
+    <div id="step1" class="reg-step-content">
       <div class="form-card">
-        <h2>Your details</h2>
+        <h2>Create your account</h2>
+        <p class="card-subtitle">Your real name is never shown publicly. Only your username appears on your listing.</p>
+
+        <div class="form-row">
+          <label>Username <span class="req">*</span></label>
+          <input type="text" id="username" placeholder="e.g. WellingtonMover, KiwiSwapper123" maxlength="30">
+          <span class="field-hint">This is the only name shown publicly on your listing. Choose something you're comfortable with.</span>
+        </div>
 
         <div class="form-grid-2">
           <div class="form-row">
             <label>First name <span class="req">*</span></label>
-            <input type="text" id="convFirstName" placeholder="First name" required>
+            <input type="text" id="firstName" placeholder="First name">
+            <span class="field-hint">Only shared when both parties are open to chat.</span>
           </div>
           <div class="form-row">
             <label>Last name <span class="req">*</span></label>
-            <input type="text" id="convLastName" placeholder="Last name" required>
+            <input type="text" id="lastName" placeholder="Last name">
+            <span class="field-hint">Never shown to anyone.</span>
           </div>
         </div>
 
         <div class="form-row">
           <label>Email address <span class="req">*</span></label>
-          <input type="email" id="convEmail" placeholder="you@firmname.co.nz" required>
+          <input type="email" id="regEmail" placeholder="you@example.com">
+          <span class="field-hint">Only shared when both parties are open to chat.</span>
         </div>
-
         <div class="form-row">
           <label>Password <span class="req">*</span></label>
-          <input type="password" id="convPassword" placeholder="At least 8 characters" required>
+          <input type="password" id="regPassword" placeholder="At least 8 characters">
         </div>
-      </div>
-
-      <div class="form-card">
-        <h2>Practice details</h2>
-
         <div class="form-row">
-          <label>Firm / practice name <span class="req">*</span></label>
-          <input type="text" id="convFirm" placeholder="e.g. Smith & Associates" required>
+          <label>Phone number</label>
+          <input type="tel" id="regPhone" placeholder="021 234 5678">
+          <span class="field-hint">Only shared when both parties are open to chat.</span>
         </div>
 
-        <div class="form-grid-2">
+        <div class="privacy-notice-box">
+          <div style="font-size:13px;font-weight:600;color:#085041;margin-bottom:6px;">🔒 Your privacy is protected</div>
+          <div style="font-size:13px;color:#0F6E56;line-height:1.6;">
+            <strong>Public:</strong> Username only<br>
+            <strong>Open to chat:</strong> First name, email and phone shared<br>
+            <strong>Never revealed:</strong> Last name, full identity
+          </div>
+        </div>
+
+        <div class="form-card" style="background:var(--surface);margin-top:1.5rem">
+          <h3 style="font-size:14px;font-weight:600;margin-bottom:1rem">Identity verification</h3>
+          <div class="verify-notice">
+            <div class="verify-notice-icon">🪪</div>
+            <div>
+              <strong>Government ID required</strong>
+              <p>All NestX members must verify their identity. Upload your driver's licence or passport.</p>
+            </div>
+          </div>
           <div class="form-row">
-            <label>Region <span class="req">*</span></label>
-            <select id="convRegion" required>
-              <option value="">Select region…</option>
-              <option>Auckland</option>
-              <option>Wellington</option>
-              <option>Canterbury</option>
-              <option>Waikato</option>
-              <option>Bay of Plenty</option>
-              <option>Otago</option>
-              <option>Manawatu-Whanganui</option>
-              <option>Hawke's Bay</option>
-              <option>Northland</option>
-              <option>Nelson/Marlborough</option>
-              <option>Southland</option>
-              <option>NZ Wide</option>
+            <label>ID Type</label>
+            <select id="idType">
+              <option value="drivers_licence">NZ Driver's Licence</option>
+              <option value="passport">Passport (any country)</option>
+              <option value="kiwiaccess">Kiwi Access Card</option>
             </select>
           </div>
           <div class="form-row">
-            <label>City / suburb <span class="req">*</span></label>
-            <input type="text" id="convCity" placeholder="e.g. Wellington CBD" required>
+            <label>Upload ID photo <span class="req">*</span></label>
+            <div class="id-upload-zone" onclick="document.getElementById('idFile').click()">
+              <input type="file" id="idFile" accept="image/*,.pdf" style="display:none" onchange="handleIdPreview(event,'idPreview','idPrompt')">
+              <div id="idPrompt" style="text-align:center">
+                <div style="font-size:28px;margin-bottom:6px">📄</div>
+                <p style="font-size:14px;font-weight:500">Click to upload ID</p>
+                <span style="font-size:12px;color:var(--text-muted)">JPG, PNG or PDF — max 10MB</span>
+              </div>
+              <div id="idPreview" style="display:none;text-align:center;padding:0.5rem">
+                <div style="font-size:24px">✅</div>
+                <p style="font-size:13px;font-weight:500;color:var(--green)" id="idFileName"></p>
+              </div>
+            </div>
+          </div>
+          <div class="form-row">
+            <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer">
+              <input type="checkbox" id="policeCheck" style="margin-top:3px;accent-color:var(--green)" onchange="togglePoliceUpload()">
+              <div>
+                <strong style="font-size:14px">Optional: Police Vetting check</strong>
+                <p style="font-size:13px;color:var(--text-muted);margin-top:3px">Adds a verified badge to your profile. Get yours free at <a href="https://www.police.govt.nz/advice-services/personal-requests/vetting" target="_blank">police.govt.nz</a></p>
+              </div>
+            </label>
+          </div>
+          <div id="policeUploadSection" style="display:none">
+            <div class="form-row">
+              <div class="id-upload-zone" onclick="document.getElementById('policeFile').click()">
+                <input type="file" id="policeFile" accept="image/*,.pdf" style="display:none" onchange="handleIdPreview(event,'policePreview','policePrompt')">
+                <div id="policePrompt" style="text-align:center">
+                  <div style="font-size:28px;margin-bottom:6px">🚔</div>
+                  <p style="font-size:14px;font-weight:500">Upload Police Vetting result</p>
+                </div>
+                <div id="policePreview" style="display:none;text-align:center;padding:0.5rem">
+                  <div style="font-size:24px">✅</div>
+                  <p style="font-size:13px;font-weight:500;color:var(--green)" id="policeFileName"></p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+      </div>
+      <div id="step1Error" class="form-error" style="display:none;margin-top:1rem"></div>
+      <div class="form-actions">
+        <button class="btn btn-primary btn-lg" onclick="proceedToStep2()">Continue to property details →</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: PROPERTY DETAILS -->
+    <div id="step2" class="reg-step-content" style="display:none">
+      <div class="form-card">
+        <h2>Your property</h2>
+        <p class="card-subtitle">Tell us about the home you're listing.</p>
 
         <div class="form-row">
-          <label>Office address</label>
-          <input type="text" id="convAddress" placeholder="Street address">
+          <label>Full address <span class="req">*</span></label>
+          <input type="text" id="propAddress" placeholder="e.g. 34 Aro Street, Aro Valley, Wellington 6021">
         </div>
 
         <div class="form-grid-2">
           <div class="form-row">
-            <label>Phone number <span class="req">*</span></label>
-            <input type="tel" id="convPhone" placeholder="04 xxx xxxx" required>
+            <label>Rateable Value / RV ($) <span class="req">*</span></label>
+            <input type="number" id="propRV" placeholder="e.g. 850000" oninput="calculateFee()" min="0">
+            <span class="field-hint">Found on your rates notice or at your local council website</span>
           </div>
           <div class="form-row">
-            <label>Website</label>
-            <input type="url" id="convWebsite" placeholder="https://yourfirm.co.nz">
+            <label>Your asking price ($) <span class="req">*</span></label>
+            <input type="number" id="propPrice" placeholder="e.g. 920000" min="0">
           </div>
         </div>
 
-        <div class="form-row">
-          <label>Specialties</label>
-          <div class="specialty-checkboxes">
-            <label class="specialty-item">
-              <input type="checkbox" value="simultaneous_settlements"> Simultaneous settlements
-            </label>
-            <label class="specialty-item">
-              <input type="checkbox" value="residential"> Residential conveyancing
-            </label>
-            <label class="specialty-item">
-              <input type="checkbox" value="rural"> Rural / lifestyle property
-            </label>
-            <label class="specialty-item">
-              <input type="checkbox" value="commercial"> Commercial property
-            </label>
-            <label class="specialty-item">
-              <input type="checkbox" value="private_sales"> Private sales
-            </label>
-            <label class="specialty-item">
-              <input type="checkbox" value="first_home"> First home buyers
-            </label>
+        <!-- FEE CALCULATOR -->
+        <div class="fee-calculator" id="feeCalculator" style="display:none">
+          <div class="fee-calc-header">
+            <span>📊 Your registration fee</span>
           </div>
-        </div>
-
-        <div class="form-row">
-          <label>About your practice</label>
-          <textarea id="convAbout" rows="4" placeholder="Briefly describe your practice, experience with swap sales, and what makes you a good fit for Nest X clients…"></textarea>
-        </div>
-
-        <div class="form-row">
-          <label>Profile photo (optional)</label>
-          <div class="id-upload-zone" onclick="document.getElementById('convPhoto').click()">
-            <input type="file" id="convPhoto" accept="image/*" style="display:none" onchange="handleIdPreview(event,'photoPreview','photoPrompt')">
-            <div id="photoPrompt" style="text-align:center">
-              <div style="font-size:28px;margin-bottom:6px">📸</div>
-              <p style="font-size:14px;font-weight:500">Upload a professional photo</p>
-              <span style="font-size:12px;color:var(--text-muted)">JPG or PNG — max 5MB</span>
+          <div class="fee-calc-body">
+            <div class="fee-line">
+              <span>Property RV</span>
+              <span id="calcRV">—</span>
             </div>
-            <div id="photoPreview" style="display:none;text-align:center;padding:0.5rem">
-              <div style="font-size:24px">✅</div>
-              <p style="font-size:13px;font-weight:500;color:var(--green)" id="photoFileName"></p>
+            <div class="fee-line">
+              <span>Registration fee (0.1% of RV)</span>
+              <span id="calcPercent">—</span>
+            </div>
+            <div class="fee-line fee-minimum" id="minimumNote" style="display:none">
+              <span>Minimum fee applies</span>
+              <span>$500.00</span>
+            </div>
+            <div class="fee-line fee-total">
+              <span>Total due today</span>
+              <span id="calcTotal">—</span>
+            </div>
+            <div class="fee-line fee-included">
+              <span>✅ One-off registration fee</span>
+              <span>No monthly fees</span>
             </div>
           </div>
+          <div class="fee-profit-note">
+            💰 <strong>No commission ever.</strong> When you sell or swap, every dollar of profit is yours to keep.
+          </div>
+        </div>
+
+        <div class="form-grid-3">
+          <div class="form-row">
+            <label>Bedrooms <span class="req">*</span></label>
+            <input type="number" id="propBeds" placeholder="3" min="1" max="20">
+          </div>
+          <div class="form-row">
+            <label>Bathrooms <span class="req">*</span></label>
+            <input type="number" id="propBaths" placeholder="2" min="1" max="20">
+          </div>
+          <div class="form-row">
+            <label>Garages</label>
+            <input type="number" id="propGarages" placeholder="1" min="0" max="10">
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-row">
+            <label>Property type <span class="req">*</span></label>
+            <select id="propType">
+              <option value="">Select…</option>
+              <option>House</option>
+              <option>Townhouse</option>
+              <option>Apartment</option>
+              <option>Lifestyle block</option>
+              <option>Section + house</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>Land area (m²)</label>
+            <input type="number" id="propLand" placeholder="650">
+          </div>
         </div>
 
         <div class="form-row">
-          <label>NZ Law Society membership number <span class="req">*</span></label>
-          <input type="text" id="convLawSociety" placeholder="Your NZLS membership number" required>
-          <span class="field-hint">We verify all practitioners against the NZ Law Society register before approving listings.</span>
+          <label>Description <span class="req">*</span></label>
+          <textarea id="propDesc" rows="5" placeholder="Describe your home — standout features, recent renovations, school zones, what you love about the neighbourhood…"></textarea>
+          <span class="field-hint">Write a basic description first, then use the AI enhancer below to polish it.</span>
+        </div>
+
+        <!-- AI DESCRIPTION ENHANCER -->
+        <div class="ai-enhancer-box">
+          <div class="ai-enhancer-header">
+            <span>✨ AI Description Enhancer</span>
+            <span class="ai-enhancer-sub">Let AI rewrite your description in a chosen tone</span>
+          </div>
+          <div class="ai-enhancer-body">
+            <div class="form-row" style="margin-bottom:10px">
+              <label style="font-size:13px;font-weight:500;color:var(--text-mid);margin-bottom:6px;display:block;">Choose tone</label>
+              <div class="tone-options">
+                <label class="tone-option">
+                  <input type="radio" name="aiTone" value="professional" checked>
+                  <span>Professional</span>
+                </label>
+                <label class="tone-option">
+                  <input type="radio" name="aiTone" value="warm">
+                  <span>Warm & inviting</span>
+                </label>
+                <label class="tone-option">
+                  <input type="radio" name="aiTone" value="bold">
+                  <span>Bold & exciting</span>
+                </label>
+                <label class="tone-option">
+                  <input type="radio" name="aiTone" value="minimal">
+                  <span>Minimal</span>
+                </label>
+                <label class="tone-option">
+                  <input type="radio" name="aiTone" value="premium">
+                  <span>Premium</span>
+                </label>
+                <label class="tone-option">
+                  <input type="radio" name="aiTone" value="family">
+                  <span>Family-friendly</span>
+                </label>
+                <label class="tone-option">
+                  <input type="radio" name="aiTone" value="investment">
+                  <span>Investment</span>
+                </label>
+              </div>
+            </div>
+            <button type="button" class="btn btn-primary" id="aiEnhanceBtn" onclick="enhanceDescription()">
+              ✨ Enhance description
+            </button>
+          </div>
+
+          <!-- AI OUTPUT -->
+          <div id="aiOutput" style="display:none">
+            <div class="ai-output-header">
+              <span>✨ AI enhanced version</span>
+            </div>
+            <div class="ai-output-body">
+              <div id="aiOutputText" style="font-size:14px;color:var(--text-mid);line-height:1.7;white-space:pre-wrap;"></div>
+              <div id="aiLoadingText" style="font-size:14px;color:var(--text-muted);font-style:italic;">Enhancing your description…</div>
+            </div>
+            <div class="ai-output-actions">
+              <button type="button" class="btn btn-primary" onclick="acceptAIDescription()">✅ Use this version</button>
+              <button type="button" class="btn btn-outline" onclick="discardAIDescription()">Keep original</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- PHOTO UPLOAD -->
+        <div class="form-row" style="margin-top:1.5rem">
+          <label>Property photos <span class="req">*</span></label>
+          <p style="font-size:13px;color:var(--text-muted);margin-bottom:10px;">Upload up to 10 photos. First photo becomes the cover image. Max 5MB each.</p>
+          <div class="photo-upload-zone" id="photoUploadZone" onclick="document.getElementById('propPhotos').click()">
+            <input type="file" id="propPhotos" accept="image/*" multiple style="display:none" onchange="handlePhotoSelect(event)">
+            <div id="photoUploadPrompt">
+              <div style="font-size:32px;margin-bottom:8px;">📷</div>
+              <p style="font-size:14px;font-weight:500;color:var(--text-mid)">Click to add photos</p>
+              <span style="font-size:12px;color:var(--text-muted)">JPG or PNG — max 5MB each — up to 10 photos</span>
+            </div>
+            <div id="photoPreviewGrid" class="photo-previews" style="display:none"></div>
+          </div>
+          <div id="photoCount" style="font-size:12px;color:var(--text-muted);margin-top:6px;display:none"></div>
+        </div>
+
+        <div class="form-row">
+          <label>Swap preference <span class="req">*</span></label>
+          <div class="swap-options">
+            <label class="swap-option">
+              <input type="radio" name="swapPref" value="up">
+              <div class="swap-option-content">
+                <strong>Upsizing</strong>
+                <span>I want a bigger or more valuable home</span>
+              </div>
+            </label>
+            <label class="swap-option">
+              <input type="radio" name="swapPref" value="down">
+              <div class="swap-option-content">
+                <strong>Downsizing</strong>
+                <span>I want a smaller or cheaper home</span>
+              </div>
+            </label>
+            <label class="swap-option">
+              <input type="radio" name="swapPref" value="lateral">
+              <div class="swap-option-content">
+                <strong>Lateral swap</strong>
+                <span>Roughly equal value swap</span>
+              </div>
+            </label>
+            <label class="swap-option">
+              <input type="radio" name="swapPref" value="any">
+              <div class="swap-option-content">
+                <strong>Open to any swap</strong>
+                <span>Happy to consider all offers</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label>Preferred swap location</label>
+          <input type="text" id="propSwapLocation" placeholder="e.g. Wellington region, open to NZ-wide">
+        </div>
+
+        <!-- PREMIUM UPGRADE -->
+        <div class="premium-upgrade-card">
+          <h3>👑 Upgrade to Premium — $199</h3>
+          <p>Premium listings accept both swap offers and direct purchase offers, and can display your contact details publicly so buyers outside NestX can reach you directly.</p>
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:12px;">
+            <input type="checkbox" id="addPremium" style="accent-color:#92400e;width:16px;height:16px;" onchange="togglePremiumOptions()">
+            <span style="font-size:14px;font-weight:500;color:#92400e;">Add Premium upgrade ($199)</span>
+          </label>
+          <div id="premiumOptions" style="display:none;border-top:1px solid #fde68a;padding-top:12px;margin-top:4px;">
+            <p style="font-size:13px;color:#78350f;margin-bottom:10px;line-height:1.6;">Premium gives you the option to display your contact details directly on your listing — so people outside NestX, like first home buyers browsing without an account, can reach you directly. It's entirely your choice what you share.</p>
+            <p style="font-size:13px;font-weight:600;color:#78350f;margin-bottom:8px;">Choose what to show publicly:</p>
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#78350f;margin-bottom:8px;cursor:pointer;">
+              <input type="checkbox" id="showEmail" style="accent-color:#92400e;">
+              Show my email address publicly
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#78350f;cursor:pointer;">
+              <input type="checkbox" id="showPhone" style="accent-color:#92400e;">
+              Show my phone number publicly
+            </label>
+          </div>
         </div>
       </div>
 
+      <div id="step2Error" class="form-error" style="display:none;margin-top:1rem"></div>
+      <div class="form-actions" style="flex-direction:row;gap:10px">
+        <button class="btn btn-outline" onclick="goToStep(1)">← Back</button>
+        <button class="btn btn-primary btn-lg" onclick="proceedToStep3()">Continue to payment →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: PAYMENT -->
+    <div id="step3" class="reg-step-content" style="display:none">
       <div class="form-card">
-        <h2>Subscription</h2>
+        <h2>Payment</h2>
+        <p class="card-subtitle">Secure payment via Stripe. Your listing goes live after we verify your RV.</p>
 
-        <div class="subscription-summary">
-          <div class="sub-item">
-            <span class="sub-icon">🆓</span>
-            <div>
-              <strong>Month 1 — Free</strong>
-              <p>Your listing goes live (after approval) at no charge for the first month.</p>
+        <div class="fee-calculator">
+          <div class="fee-calc-header"><span>📊 Order summary</span></div>
+          <div class="fee-calc-body">
+            <div class="fee-line">
+              <span>Registration fee (0.1% of RV)</span>
+              <span id="paymentFeeDisplay">—</span>
+            </div>
+            <div class="fee-line" id="premiumFeeLine" style="display:none">
+              <span>👑 Premium upgrade</span>
+              <span>$199.00</span>
+            </div>
+            <div class="fee-line" style="font-size:12px;color:var(--text-muted)">
+              <span>GST inclusive</span>
+              <span>15% GST included</span>
+            </div>
+            <div class="fee-line fee-included">
+              <span>✅ One-off registration fee</span>
+              <span>No monthly fees ever</span>
+            </div>
+            <div class="fee-line fee-total">
+              <span>Due today</span>
+              <span id="paymentTotalDisplay">—</span>
             </div>
           </div>
-          <div class="sub-item">
-            <span class="sub-icon">💵</span>
-            <div>
-              <strong>Month 2 onwards — $40/month NZD</strong>
-              <p>Automatically billed via Stripe. Cancel anytime — your listing is removed when subscription ends.</p>
-            </div>
+          <div class="fee-profit-note">
+            💰 <strong>Zero commission forever.</strong> Keep 100% of your profit when you sell or swap.
           </div>
         </div>
 
-        <p style="font-size:13px;color:var(--text-muted);margin-top:1rem">To start your free month, we'll collect your card details now but <strong>will not charge you until month 2</strong>. You'll receive a reminder email before your first charge. All fees are GST inclusive.</p>
+        <!-- DISCOUNT CODE -->
+        <div class="form-row" style="margin-top:1rem;">
+          <label>Discount code</label>
+          <div style="display:flex;gap:8px;">
+            <input type="text" id="discountCode" placeholder="Enter code (optional)" style="flex:1;text-transform:uppercase;">
+            <button type="button" class="btn btn-outline" onclick="applyDiscount()">Apply</button>
+          </div>
+          <div id="discountMsg" style="font-size:13px;margin-top:6px;display:none;"></div>
+        </div>
 
-        <div class="form-row" style="margin-top:1.25rem">
+        <div class="form-row" style="margin-top:1.5rem">
           <label>Card details <span class="req">*</span></label>
-          <div id="convCardElement" class="stripe-card-element"></div>
-          <div id="convCardError" class="form-error" style="display:none;margin-top:8px"></div>
+          <div id="cardElement" class="stripe-card-element"></div>
+          <div id="cardError" class="form-error" style="display:none;margin-top:8px"></div>
         </div>
 
         <div class="form-row">
           <label class="checkbox-label">
-            <input type="checkbox" id="convAgreeTerms" required>
-            I agree to the <a href="terms.html" target="_blank">terms of use</a> and <a href="privacy.html" target="_blank">privacy policy</a>. I confirm I am a licensed NZ conveyancer and the information provided is accurate.
+            <input type="checkbox" id="agreeTerms" required>
+            I agree to the <a href="terms.html" target="_blank">terms of use</a> and <a href="privacy.html" target="_blank">privacy policy</a>. I confirm the RV entered is accurate to the best of my knowledge.
           </label>
         </div>
 
         <div class="form-row">
           <label class="checkbox-label">
-            <input type="checkbox" id="convAgreeDirectory" required>
-            I understand that Nest X provides a directory listing only. Nest X does not endorse my services, receive referral fees, or take responsibility for client engagements.
+            <input type="checkbox" id="agreeNoRefund">
+            I understand that registration fees are non-refundable and access ends when my listing is removed or property is sold.
           </label>
         </div>
       </div>
 
-      <div id="convRegError" class="form-error" style="display:none;margin-top:1rem"></div>
-
-      <div class="form-actions">
-        <button type="button" class="btn btn-primary btn-lg" id="convSubmitBtn" onclick="submitConveyancerReg()">
-          Start free month →
+      <div id="step3Error" class="form-error" style="display:none;margin-top:1rem"></div>
+      <div class="form-actions" style="flex-direction:row;gap:10px">
+        <button class="btn btn-outline" onclick="goToStep(2)">← Back</button>
+        <button class="btn btn-primary btn-lg" id="payBtn" onclick="processPayment()">
+          Pay and register →
         </button>
-        <p class="form-note">No charge today. $40/month begins after your free first month. Cancel anytime.</p>
       </div>
+    </div>
 
-    </form>
-
-    <!-- SUCCESS STATE -->
-    <div id="convSuccess" style="display:none">
+    <!-- STEP 4: SUCCESS -->
+    <div id="step4" class="reg-step-content" style="display:none">
       <div class="form-card" style="text-align:center;padding:3rem 2rem">
-        <div style="font-size:56px;margin-bottom:1rem">⚖️</div>
-        <h2 style="margin-bottom:0.75rem">Application received!</h2>
-        <p style="color:var(--text-mid);margin-bottom:1.5rem;font-size:15px">We're reviewing your details and verifying your NZ Law Society membership. Your listing will go live within 1–2 business days once approved.</p>
+        <div style="font-size:56px;margin-bottom:1rem">🎉</div>
+        <h2 style="margin-bottom:0.75rem">You're registered!</h2>
+        <p style="color:var(--text-mid);margin-bottom:1.5rem;font-size:15px">Your listing is now <strong>pending verification</strong>. We'll check your RV against council records and have your listing live within 1 business day.</p>
+
         <div class="verification-status-box">
           <div class="vs-item">
             <span class="vs-icon">⏳</span>
             <div>
-              <strong>Details under review</strong>
-              <span>We're verifying your NZLS membership</span>
+              <strong>RV Verification</strong>
+              <span>We're checking your RV against council records</span>
             </div>
           </div>
           <div class="vs-item">
-            <span class="vs-icon">🆓</span>
+            <span class="vs-icon">🪪</span>
             <div>
-              <strong>Free month starts on approval</strong>
-              <span>No charge until month 2</span>
+              <strong>ID Verification</strong>
+              <span>We're reviewing your identity documents</span>
             </div>
           </div>
           <div class="vs-item">
             <span class="vs-icon">📧</span>
             <div>
               <strong>Email confirmation</strong>
-              <span>We'll email you when you're live in the directory</span>
+              <span>You'll receive an email when your listing goes live</span>
             </div>
           </div>
         </div>
-        <a href="conveyancers.html" class="btn btn-outline btn-lg" style="margin-top:1.5rem">View the directory →</a>
+
+        <div class="profit-reminder">
+          💰 Remember — when you sell or swap, <strong>zero commission</strong> means every dollar of profit stays with you.
+        </div>
+
+        <a href="dashboard.html" class="btn btn-primary btn-lg" style="margin-top:1.5rem">Go to my dashboard →</a>
       </div>
     </div>
+
+    </div> <!-- end #listingForm -->
 
   </div>
 
   <footer class="footer">
     <div class="container footer-inner">
       <div class="footer-brand">
-        <span class="logo">Nest<span>X</span></span>
+        <span class="logo"><img src="https://dacpuhfkuprqqaqoxwll.supabase.co/storage/v1/object/public/assets/Birdhouse%20Logo.png" alt="NestX" style="width:32px;height:32px;border-radius:4px;">NestX</span>
         <p>New Zealand's verified private home swap marketplace.</p>
       </div>
       <div class="footer-links">
@@ -311,12 +592,13 @@
         <a href="privacy.html">Privacy policy</a>
         <a href="mailto:hello@nestx.co.nz">Contact</a>
       </div>
-      <p class="footer-disclaimer">⚖️ Nest X is a private listing platform only. We are not a licensed real estate agent and do not provide property advice. Conveyancer listings are for directory purposes only — Nest X does not endorse or take responsibility for any listed conveyancer.</p>
+      <p class="footer-disclaimer">⚖️ NestX is a private listing platform only. We are not a licensed real estate agent and do not provide property advice.</p>
     </div>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../js/supabase.js"></script>
   <script src="../js/auth.js"></script>
-  <script src="../js/register-conveyancer.js"></script>
+  <script src="../js/register-lister.js"></script>
 </body>
 </html>
